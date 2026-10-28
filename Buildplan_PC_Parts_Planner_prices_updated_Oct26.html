@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Buildplan: PC build planner</title>
+<style>
+:root{--bg:#fff;--card:#f5f5f7;--ink:#1d1d1f;--mute:#6e6e73;--line:#d2d2d7;--acc:#0071e3;--onacc:#fff;--bad:#d70015;--badbg:#fff0f0;--ok:#248a3d;--okbg:#e9f7ee;--warn:#b25000;--warnbg:#fff4e0;--g1:#eceef2;--g2:#c3c8d0;--g3:#8b929c;--g4:#3b4048;--nav:rgba(255,255,255,.8);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--card:#1c1c1e;--ink:#f5f5f7;--mute:#98989d;--line:#38383a;--acc:#2997ff;--onacc:#001a33;--bad:#ff6961;--badbg:#3a1a1a;--ok:#30d158;--okbg:#12301c;--warn:#ffb340;--warnbg:#3a2a10;--g1:#2c2c2e;--g2:#48484a;--g3:#7c7c80;--g4:#d1d1d6;--nav:rgba(0,0,0,.72)}}
+:root[data-theme="dark"]{--bg:#000;--card:#1c1c1e;--ink:#f5f5f7;--mute:#98989d;--line:#38383a;--acc:#2997ff;--onacc:#001a33;--bad:#ff6961;--badbg:#3a1a1a;--ok:#30d158;--okbg:#12301c;--warn:#ffb340;--warnbg:#3a2a10;--g1:#2c2c2e;--g2:#48484a;--g3:#7c7c80;--g4:#d1d1d6;--nav:rgba(0,0,0,.72);color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--nav);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);z-index:10}
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--nav);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+.nav .in{max-width:860px;margin:0 auto;height:48px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;font-size:14px}
+.mini{display:flex;gap:18px;color:var(--mute)}.mini b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.wrap{max-width:860px;margin:0 auto;padding:0 20px 60px}
+h1{font-size:clamp(40px,9vw,80px);line-height:1.04;font-weight:700;letter-spacing:-.045em;margin:64px 0 12px;text-align:center}
+.lead{color:var(--mute);font-size:clamp(19px,2.6vw,24px);line-height:1.3;margin:0 auto 48px;max-width:620px;text-align:center}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.tile{background:var(--card);border-radius:28px;padding:30px 22px;text-align:center}
+.k{color:var(--mute);font-size:14px}
+.v{font-size:50px;font-weight:700;letter-spacing:-.03em;line-height:1.15;margin-top:2px;font-variant-numeric:tabular-nums}
+.v input{font:inherit;letter-spacing:inherit;width:100%;text-align:center;border:0;background:transparent;color:var(--ink);padding:0;outline:none}
+.v input:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:6px}
+.s{color:var(--mute);font-size:14px}.s.bad{color:var(--bad)}
+#chk{margin:14px 0 48px;text-align:center}
+.is{padding:12px 16px;border-radius:14px;margin-bottom:8px;font-size:15px}
+.is.e{background:var(--badbg);color:var(--bad)}.is.w{background:var(--warnbg);color:var(--warn)}
+.okp{background:var(--okbg);color:var(--ok);padding:12px 16px;border-radius:14px;font-size:15px}
+.mute{color:var(--mute)}
+.card{display:grid;grid-template-columns:96px 1fr auto;gap:18px;align-items:center;background:var(--card);border-radius:26px;padding:18px 26px 18px 18px;margin-bottom:12px}
+.card[data-d]{cursor:pointer}.card[data-d]:hover{filter:brightness(.97)}
+.pic{width:96px;height:72px;background:var(--bg);border-radius:18px;display:grid;place-items:center;overflow:hidden}
+.pic svg{width:100%;height:100%}.empty .pic svg{opacity:.35}
+.s1{fill:var(--g1);stroke:var(--g2);stroke-width:.8}.s2{fill:var(--g2)}.s3{fill:var(--g3)}.s4{fill:var(--g4)}
+.ln{fill:none;stroke:var(--g3);stroke-width:1.5;stroke-linecap:round}
+.cat{color:var(--mute);font-size:13px}
+.nm{font-weight:600;font-size:17px;letter-spacing:-.01em}
+.sp{color:var(--mute);font-size:14px}
+.rt{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.pr{font-weight:600;font-variant-numeric:tabular-nums}
+.lk{display:flex;gap:12px}
+button{font:inherit;cursor:pointer;border:0;background:none;color:var(--ink)}
+button:focus-visible,.card:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.t{color:var(--acc);font-size:14px;padding:2px 0}.t:hover{text-decoration:underline}.lk .t:first-child::after{content:" ›"}
+.pill{background:var(--acc);color:var(--onacc);border-radius:980px;padding:8px 20px;font-size:15px;font-weight:500}
+.pill:hover{filter:brightness(1.08)}.pill.g{background:var(--card);color:var(--ink)}
+.chip{display:inline-block;margin:6px 6px 0 0;padding:3px 10px;border-radius:980px;font-size:12.5px}
+.chip.e{background:var(--badbg);color:var(--bad)}.chip.w{background:var(--warnbg);color:var(--warn)}.chip.ok{background:var(--okbg);color:var(--ok)}
+.note{color:var(--mute);font-size:13px;text-align:center;margin-top:24px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.4);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:flex;justify-content:center;align-items:flex-start;padding:5vh 12px;z-index:20}
+#dt{z-index:30;align-items:center}
+.ov[hidden]{display:none}
+.pk{background:var(--bg);border-radius:22px;width:100%;max-width:640px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.ph{display:flex;justify-content:space-between;align-items:center;padding:18px 20px 6px;font-size:21px;font-weight:700;letter-spacing:-.02em}
+.pc{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 20px 14px;font-size:14px}
+.pc input[type=search],.pc select{font:inherit;font-size:15px;padding:8px 12px;border:0;border-radius:10px;background:var(--card);color:var(--ink)}
+.pc input[type=search]{flex:1;min-width:140px}
+#pl{overflow:auto;padding:0 20px 20px}
+.pi{display:grid;grid-template-columns:72px 1fr auto auto;gap:14px;align-items:center;background:var(--card);border-radius:16px;padding:12px 14px;margin-bottom:8px;cursor:pointer}
+.pi .pic{width:72px;height:54px;border-radius:10px}
+.pad{padding:20px 0}
+.sheet{background:var(--bg);border:1px solid var(--line);box-shadow:0 24px 70px rgba(0,0,0,.25);border-radius:30px;width:100%;max-width:760px;max-height:92vh;overflow:auto;padding:26px;position:relative}
+.x{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;background:var(--card);font-size:20px;line-height:1;color:var(--mute)}
+.detail-layout{display:grid;grid-template-columns:minmax(220px,.9fr) minmax(0,1.1fr);gap:24px;align-items:start}
+.detail-gallery{min-width:0}.product-photo{width:100%;height:100%;object-fit:contain;padding:10px;box-sizing:border-box}.gallery-tile .product-photo{padding:5px}
+.big{background:linear-gradient(145deg,var(--card),var(--bg));border:1px solid var(--line);border-radius:22px;height:270px;display:grid;place-items:center;margin-bottom:10px}.big svg{height:210px;width:90%;max-width:260px}
+.gallery-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.gallery-tile{height:76px;background:var(--card);border:1px solid var(--line);border-radius:12px;display:grid;place-items:center;overflow:hidden}
+.gallery-tile svg{width:70%;height:64px}
+.detail-copy{min-width:0}.detail-copy .cat{margin-top:2px}.detail-copy h2{overflow-wrap:anywhere}
+.detail-desc{font-size:14px;color:var(--mute);line-height:1.55;margin:12px 0}
+.detail-spec-title{font-size:15px;font-weight:700;margin:16px 0 0}
+@media(max-width:620px){.detail-layout{grid-template-columns:1fr;gap:10px}.big{height:200px}.big svg{height:155px}.gallery-tile{height:60px}.gallery-tile svg{height:50px}.sheet{padding:20px}}
+
+.sheet h2{margin:2px 0 2px;font-size:26px;letter-spacing:-.025em;line-height:1.15}
+.price{font-size:20px;font-weight:600;margin-bottom:4px}
+dl{margin:16px 0 20px}dl div{display:flex;justify-content:space-between;padding:11px 0;border-top:1px solid var(--line);font-size:15px}
+dt{color:var(--mute)}dd{margin:0;font-weight:500;text-align:right}
+.acts{display:flex;gap:10px}.acts .pill{flex:1}
+@media (max-width:560px){.card{grid-template-columns:72px 1fr}.card .pic{width:72px;height:56px}.rt{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center}.pi{grid-template-columns:72px 1fr auto}.pi .pr{display:none}.mini{gap:12px}}
+@media (prefers-reduced-motion:no-preference){.card{transition:box-shadow .2s}}
+
+.nav .in{max-width:1024px;height:44px;font-size:12px}
+.nav .in>b{font-size:17px;font-weight:600;letter-spacing:-.02em}
+.wrap{max-width:1024px;padding-bottom:0}
+h1{font-size:clamp(46px,11vw,96px);font-weight:600;letter-spacing:-.055em;line-height:1;margin:84px 0 18px}
+.lead{font-size:clamp(19px,3vw,28px);font-weight:500;letter-spacing:-.01em;color:var(--mute);max-width:700px;margin:0 auto 64px}
+.stats{grid-template-columns:repeat(3,1fr);gap:0}
+.tile{background:none;border-radius:0;padding:6px 10px;border-left:1px solid var(--line)}
+.tile:first-child{border-left:0}
+.v{font-size:clamp(26px,6.4vw,64px);font-weight:600;letter-spacing:-.045em}
+.s,.k{font-size:clamp(12px,1.6vw,15px)}
+#chk{margin:36px 0 0}
+.sec{padding-top:88px}
+.sec h2{margin:0 0 28px;font-size:clamp(26px,4.6vw,44px);font-weight:600;letter-spacing:-.03em;line-height:1.08}
+.sec h2 .g{color:#86868b}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.opt{position:relative;display:flex;flex-direction:column;align-items:flex-start;background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:16px;min-height:310px;cursor:pointer}
+.opt:hover{border-color:var(--mute)}
+.opt.on{border:2px solid var(--acc);padding:15px}
+.opt.on::after{content:"✓";position:absolute;top:12px;right:12px;width:24px;height:24px;border-radius:50%;background:var(--acc);color:var(--onacc);display:grid;place-items:center;font-size:13px;font-weight:700}
+.opt .pic{width:100%;height:140px;background:var(--card);border-radius:14px;margin-bottom:14px}
+.opt .nm{font-size:16px}
+.opt .pr{margin-top:auto;padding-top:12px;font-size:19px;font-weight:600;letter-spacing:-.01em}
+.opt .t{padding:6px 0 0}.opt .t::after,.more .t::after{content:" ›"}
+.more{margin-top:20px}.more .t{font-size:17px}
+footer{background:var(--card);margin-top:96px;padding:28px 20px;font-size:12px;line-height:1.5;color:var(--mute)}
+footer p{max-width:1024px;margin:0 auto}
+@media (max-width:640px){.opts{grid-template-columns:repeat(2,1fr);gap:10px}.opt{min-height:0;padding:12px}.opt.on{padding:11px}.opt .pic{height:96px}h1{margin-top:56px}.sec{padding-top:64px}}
+
+.pp{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.pb{display:flex;flex-direction:column;align-items:flex-start;background:var(--card);border-radius:26px;padding:18px}
+.pb .pic{width:100%;height:130px;background:var(--bg);border-radius:18px;margin-bottom:16px}
+.pb h3{margin:0 0 4px;font-size:21px;font-weight:600;letter-spacing:-.02em}
+.pb .d{margin:0 0 12px;color:var(--mute);font-size:14px;min-height:60px}
+.pr2{margin:12px 0 16px;font-size:24px;font-weight:600;letter-spacing:-.02em}
+.pr2 span{font-size:13px;color:var(--mute);font-weight:400;margin-left:6px}
+.pb .pill{margin-top:auto}
+.tbl{border-top:1px solid var(--line)}
+.trow{display:grid;grid-template-columns:140px 1fr auto auto;gap:18px;align-items:center;padding:18px 0;border-bottom:1px solid var(--line)}
+.trow[data-d]{cursor:pointer}
+.tl{font-size:17px;font-weight:600}
+.tm{display:flex;gap:16px;align-items:center;min-width:0}
+.trow .pic{width:84px;height:62px;background:var(--card);border-radius:14px;flex:none}
+.trow .pr{min-width:72px;text-align:right;font-size:17px}
+.ttl{display:flex;justify-content:space-between;padding:22px 0 0;font-size:24px;font-weight:600;letter-spacing:-.02em}
+@media (max-width:640px){.trow{grid-template-columns:1fr auto}.tl{grid-column:1/-1}.lk{grid-column:1/-1}.pp{grid-template-columns:1fr 1fr;gap:10px}.pb{padding:12px}.pb .pic{height:96px}}
+
+/* Buildplan UI refresh — fixed light theme */
+:root{
+  color-scheme:light !important;
+  --bg:#ffffff !important;
+  --card:#f7f8fa !important;
+  --ink:#17191c !important;
+  --mute:#68717d !important;
+  --line:#e3e7ed !important;
+  --acc:#2563eb !important;
+  --onacc:#ffffff !important;
+  --bad:#b42318 !important;
+  --badbg:#fff1f0 !important;
+  --ok:#18794e !important;
+  --okbg:#eaf8f0 !important;
+  --warn:#9a6700 !important;
+  --warnbg:#fff7e5 !important;
+  --g1:#eef1f5 !important;
+  --g2:#cbd2dc !important;
+  --g3:#8993a2 !important;
+  --g4:#343b46 !important;
+  --nav:rgba(255,255,255,.92) !important;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:light !important;
+    --bg:#ffffff !important;--card:#f7f8fa !important;--ink:#17191c !important;
+    --mute:#68717d !important;--line:#e3e7ed !important;--acc:#2563eb !important;
+    --onacc:#ffffff !important;--bad:#b42318 !important;--badbg:#fff1f0 !important;
+    --ok:#18794e !important;--okbg:#eaf8f0 !important;--warn:#9a6700 !important;
+    --warnbg:#fff7e5 !important;--g1:#eef1f5 !important;--g2:#cbd2dc !important;
+    --g3:#8993a2 !important;--g4:#343b46 !important;--nav:rgba(255,255,255,.92) !important;
+  }
+}
+body{background:#fff;color:#17191c;line-height:1.5}
+.nav{border-bottom:1px solid #e7eaf0;box-shadow:0 2px 12px rgba(20,30,50,.035)}
+.nav .in{height:56px;font-size:13px}
+.nav .in>b{font-size:18px;letter-spacing:-.035em}
+.mini{gap:20px}
+.wrap{max-width:1100px;padding:0 28px 8px}
+h1{font-size:clamp(48px,8vw,88px);line-height:.98;letter-spacing:-.065em;margin:82px 0 20px}
+.lead{font-size:clamp(18px,2.4vw,23px);font-weight:400;line-height:1.5;max-width:650px;margin-bottom:54px}
+.stats{gap:14px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.tile{background:#f7f8fa;border:1px solid #edf0f4;border-radius:20px;padding:22px 18px;text-align:left}
+.tile:first-child{border-left:1px solid #edf0f4}
+.v{font-size:clamp(30px,4vw,48px);letter-spacing:-.055em;margin:8px 0 5px}
+.v input{text-align:left}
+.k{font-size:13px;font-weight:600;letter-spacing:.025em;text-transform:uppercase}
+.s{font-size:13px}
+#chk{margin:18px 0 0;text-align:left}
+.is,.okp{border-radius:12px;padding:12px 15px}
+.sec{padding-top:76px}
+.sec h2{font-size:clamp(28px,4vw,40px);letter-spacing:-.045em;margin-bottom:24px}
+.sec h2 .g{color:#818895;font-weight:400}
+.pp{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.pb{background:#fff;border:1px solid #e6eaf0;border-radius:20px;padding:16px;box-shadow:0 2px 8px rgba(20,30,50,.025);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.pb:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(20,30,50,.08);border-color:#d5dce7}
+.pb .pic{background:#fff;border:1px solid #eef1f5;height:170px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.pb .pic img{display:block;width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
+.pb .pic.build-preview{padding:4px}
+.pb h3{font-size:18px;letter-spacing:-.025em;margin-bottom:6px}
+.pb .d{font-size:13px;line-height:1.5;min-height:58px}
+.pr2{font-size:25px;margin:14px 0 16px}
+.pill{background:#2563eb;color:#fff;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:600;transition:background .15s ease,transform .15s ease}
+.pill:hover{filter:none;background:#1d4ed8;transform:translateY(-1px)}
+.pill.g{background:#eef2f7;color:#283244}
+.pill.g:hover{background:#e2e8f0}
+.t{color:#245bd6;font-weight:600}
+.tbl{border-top:1px solid #e8ebf0}
+.trow{grid-template-columns:150px minmax(0,1fr) auto auto;gap:20px;padding:20px 8px;border-bottom:1px solid #e8ebf0;transition:background .15s ease}
+.trow[data-d]:hover{background:#fafbfc}
+.tl{font-size:15px;color:#555f6d}
+.tm{gap:14px}
+.trow .pic{background:#f7f8fa;border:1px solid #edf0f4}
+.nm{line-height:1.35}
+.sp{font-size:13px;line-height:1.5}
+.chip{padding:4px 9px;font-size:11px;font-weight:600}
+.ttl{padding:24px 8px 0;font-size:22px}
+footer{margin-top:84px;background:#f7f8fa;border-top:1px solid #e8ebf0;padding:28px}
+.ov{background:rgba(16,24,40,.38);backdrop-filter:blur(7px)}
+.pk{border:1px solid #e6eaf0;border-radius:22px;box-shadow:0 24px 80px rgba(20,30,50,.2)}
+.ph{padding:22px 22px 8px}
+.pc{padding:12px 22px 16px}
+.pc input[type=search],.pc select{border:1px solid #e2e7ee;background:#f8fafc;border-radius:10px}
+#pl{padding:0 22px 22px}
+.pi{border:1px solid transparent;transition:border-color .15s ease,background .15s ease}
+.pi:hover{border-color:#dbe3ef;background:#f1f5f9}
+.sheet{border:1px solid #e6eaf0;border-radius:24px;box-shadow:0 24px 80px rgba(20,30,50,.2)}
+.big{background:#f7f8fa;border:1px solid #edf0f4}
+.x{background:#eef2f7;color:#4b5563}
+button:focus-visible,.card:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid rgba(37,99,235,.35);outline-offset:3px}
+@media(max-width:700px){
+  .wrap{padding-left:18px;padding-right:18px}
+  h1{margin-top:58px}
+  .stats{grid-template-columns:1fr;gap:8px}
+  .tile{padding:16px 18px}
+  .tile .v{font-size:32px}
+  .sec{padding-top:58px}
+  .trow{grid-template-columns:1fr auto;gap:10px;padding:16px 4px}
+  .tl{grid-column:1/-1}
+  .tm{align-items:flex-start}
+  .lk{grid-column:1/-1}
+  .pp{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .pb{padding:12px;border-radius:16px}
+  .pb .pic{height:125px}
+  .pb .d{min-height:0}
+  .pr2{font-size:20px}
+  .mini{gap:10px;font-size:11px}
+}
+@media(max-width:420px){
+  .pp{grid-template-columns:1fr}
+  .nav .in{padding:0 16px}
+  .mini{gap:8px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;scroll-behavior:auto!important}
+}
+
+
+.buy-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:#ffb84d;color:#1f2937;border:1px solid #e9a23b;border-radius:999px;padding:9px 13px;font-weight:700;font-size:14px;white-space:nowrap}
+.buy-link:hover{background:#ffc66f}
+.pi .buy-link{grid-column:1/-1;justify-self:start;margin-top:2px}
+.acts{display:flex;gap:10px;flex-wrap:wrap}
+@media(max-width:700px){.buy-link{padding:10px 12px}}
+
+/* Larger component illustrations make every selectable part easier to identify. */
+.pi .pic{height:112px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fff,#f5f8fc);border:1px solid #e5ebf4;border-radius:12px;padding:8px}
+.pi .pic svg{width:100%;height:100%;max-height:100px}
+.big{min-height:180px;display:flex;align-items:center;justify-content:center}
+.big svg{width:100%;max-height:210px}
+.trow .pic{width:74px;height:64px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#f7f9fc;border-radius:10px;padding:4px}
+.trow .pic svg{width:100%;height:100%}
+.pi .buy-link{margin-top:4px}
+@media(max-width:700px){.pi .pic{height:94px}.big{min-height:140px}}
+
+
+.account-btn{border:1px solid #d6e0ee;background:#fff;color:#075ed5;border-radius:999px;padding:8px 13px;font-weight:700;cursor:pointer}
+.account-modal{width:min(460px,calc(100vw - 28px));background:#fff;color:#172033;border:1px solid #e1e7f0;border-radius:20px;padding:22px;box-shadow:0 24px 80px rgba(20,30,50,.22)}
+.account-modal h2{margin:0 0 6px}.account-modal p{color:#657188;font-size:13px}
+.account-modal label{display:block;font-size:13px;font-weight:650;margin:12px 0 5px}
+.account-modal input{width:100%;padding:11px 12px;border:1px solid #d7deea;border-radius:10px;background:#fff;color:#172033}
+.account-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.account-actions button{border:0;border-radius:10px;padding:10px 13px;font-weight:700;cursor:pointer}
+.account-primary{background:#0866e8;color:#fff}.account-secondary{background:#eef3fa;color:#172033}
+#accountMessage{min-height:18px;color:#b42318;font-size:13px;margin-top:10px}
+.account-note{background:#f4f7fb;border-radius:10px;padding:10px;color:#59677d!important;font-size:12px!important}
+@media(max-width:700px){.nav .in{height:auto;min-height:56px;gap:8px}.mini{flex-wrap:wrap;justify-content:flex-end}.account-btn{font-size:11px;padding:7px 9px}}
+
+.popular-breakdown{margin:10px 0;text-align:left;font-size:12px;color:#334155}
+.popular-breakdown summary{cursor:pointer;font-weight:700;padding:7px 0;color:#2457a6}
+.popular-part{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid #e7ebf2}
+.popular-part span{overflow-wrap:anywhere}
+.popular-part b{white-space:nowrap}
+.popular-part .buy-link{font-size:11px;white-space:nowrap}
+</style></head>
+<body>
+<nav class="nav"><div class="in"><b>Buildplan</b><div class="mini"><span>Total <b id="nt">$0</b></span><span>Power <b id="nw">0 W</b></span><button class="account-btn" id="accountOpen">Sign in / Create account</button></div></div></nav>
+<main class="wrap">
+<h1>Build your PC.</h1>
+<p class="lead">Browse 600+ PC-parts options, including budget and older-generation CPUs and GPUs, more RAM and storage choices, and cases from Okinos and other brands. Prices are updated where recent US retailer data was available; other entries are estimates. Amazon prices can differ from the estimate—use the Amazon link to check the exact listing before buying.</p>
+<div class="stats" id="stats"></div><div id="chk"></div>
+<section class="sec" id="pops"><h2>Popular picks. <span class="g">Refreshed estimates · checked Oct 26, 2026 · verify exact Amazon listing.</span></h2><div class="pp" id="pop"></div></section>
+<section class="sec" id="parts"><h2>Your parts. <span class="g">Choose one for each slot.</span></h2><div id="list"></div></section>
+</main>
+<footer><p>Catalog focused on core PC components only: CPUs, CPU coolers, motherboards, RAM, storage, graphics cards, cases, and power supplies. Selected prices were checked against current US retailer and Amazon price-tracking results on October 26, 2026. The Okinos Mirage 4 Black estimate uses an Amazon-indexed price of $59.99; a separate Newegg listing showed $95.99 plus shipping. Prices are not a live Amazon feed; unverified models keep estimates. Prices can differ by color, seller, stock, or shipping, so confirm on the retailer page before buying. Click “Buy on Amazon” to check the current listing before purchasing. Verify the exact price with the retailer before buying. Confirm exact models, compatibility and dimensions with manufacturers and retailers. Your plan is saved in this browser only.</p></footer>
+<div class="ov" id="ov" hidden><div class="pk" role="dialog" aria-modal="true" aria-labelledby="pt">
+<div class="ph"><span id="pt"></span><button class="t" id="px">Close</button></div>
+<div class="pc"><input type="search" id="q" placeholder="Search parts" aria-label="Search parts"><select id="so" aria-label="Sort"><option value="pop">Most popular</option><option value="lo">Price: low to high</option><option value="hi">Price: high to low</option><option value="nm">Name</option></select><label><input type="checkbox" id="hi" checked> Hide incompatible</label></div>
+<div id="pl"></div></div></div>
+<div class="ov" id="dt" hidden><div class="sheet" role="dialog" aria-modal="true"><button class="x" id="dx" aria-label="Close">×</button><div id="dc"></div></div></div>
+<div class="ov" id="accountOverlay" hidden><section class="account-modal" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 id="accountTitle">Your Buildplan account</h2><button class="t" id="accountClose">Close</button></div>
+  <p id="accountSubtitle">Sign in or create a local account to save your builds.</p>
+  <div id="accountForm">
+    <label for="accountEmail">Email</label><input id="accountEmail" type="email" autocomplete="email" placeholder="you@example.com">
+    <label for="accountPassword">Password</label><input id="accountPassword" type="password" autocomplete="current-password" placeholder="At least 8 characters">
+    <div class="account-actions"><button class="account-primary" id="signInBtn">Sign in</button><button class="account-secondary" id="signUpBtn">Create account</button></div>
+  </div>
+  <div id="signedInPanel" hidden><p id="signedInText"></p><label for="buildName">Save current build as</label><input id="buildName" maxlength="60" placeholder="My gaming PC"><div class="account-actions"><button class="account-primary" id="saveBuildBtn">Save build</button><button class="account-secondary" id="showBuildsBtn">My saved builds</button><button class="account-secondary" id="signOutBtn">Sign out</button></div><div id="savedBuilds"></div></div>
+  <div id="accountMessage" role="status"></div>
+  <p class="account-note">Prototype accounts are stored only in this browser on this device and do not sync across devices. This is not secure production authentication; don't reuse an important password. For real accounts, the site needs a secure authentication backend.</p>
+</section></div>
+<script>
+const A=["AM4","AM5","LGA1700","LGA1851"];
+const cpu=(n,p,sock,tdp,c,igpu)=>({n,p,sock,tdp,igpu,s:`${c} cores, ${sock}, ${tdp} W`});
+const cooler=(n,p,h,rad,socks)=>({n,p,h,rad,socks,s:rad?`${rad} mm liquid cooler`:`Air cooler, ${h} mm tall`});
+const mobo=(n,p,sock,ddr,ff)=>({n,p,sock,ddr,ff,s:`${sock}, ${ddr}, ${ff}`});
+const ram=(n,p,ddr,gb)=>({n,p,ddr,gb,s:`${gb} GB ${ddr}`});
+const sto=(n,p,s)=>({n,p,s});
+const gpu=(n,p,w,len)=>({n,p,w,len,s:w?`${w} W, ${len} mm long`:"Uses the CPU’s built-in graphics"});
+const cs=(n,p,ff,len,h,rad)=>({n,p,ff,len,h,rad,s:`${ff}, GPU up to ${len} mm, cooler up to ${h} mm`});
+const psu=(n,p,w)=>({n,p,w,s:`${w} W`});
+const M=(f,r)=>r.map(a=>f(...a));
+const D={
+cpu:{label:"Processor",items:M(cpu,[
+["AMD Ryzen 7 9800X3D",450,"AM5",120,8,1],["AMD Ryzen 7 7800X3D",430,"AM5",120,8,1],["AMD Ryzen 5 7600",200,"AM5",65,6,1],["AMD Ryzen 5 5600",130,"AM4",65,6,0],
+["AMD Ryzen 7 5700X3D",230,"AM4",105,8,0],["AMD Ryzen 5 9600X",210,"AM5",65,6,1],["Intel Core i5-14600K",270,"LGA1700",125,14,1],["Intel Core i5-13400F",170,"LGA1700",65,10,0],
+["Intel Core i5-12400F",110,"LGA1700",65,6,0],["AMD Ryzen 7 9700X",300,"AM5",65,8,1],["Intel Core i7-14700K",370,"LGA1700",125,20,1],["AMD Ryzen 9 9950X3D",680,"AM5",170,16,1],
+["AMD Ryzen 5 5600X",150,"AM4",65,6,0],["Intel Core i7-14700KF",350,"LGA1700",125,20,0],["AMD Ryzen 9 9900X",380,"AM5",120,12,1],["AMD Ryzen 7 7700X",290,"AM5",105,8,1],
+["AMD Ryzen 5 7600X",220,"AM5",105,6,1],["Intel Core Ultra 7 265K",380,"LGA1851",125,20,1],["Intel Core Ultra 5 245K",290,"LGA1851",125,14,1],["AMD Ryzen 9 9950X",560,"AM5",170,16,1],
+["Intel Core i9-14900K",450,"LGA1700",125,24,1],["Intel Core i5-14400F",190,"LGA1700",65,10,0],["Intel Core i3-12100F",95,"LGA1700",58,4,0],["AMD Ryzen 5 5500",90,"AM4",65,6,0],
+["AMD Ryzen 7 5700X",160,"AM4",65,8,0],["AMD Ryzen 7 5800X3D",300,"AM4",105,8,0],["Intel Core i5-12600K",190,"LGA1700",125,10,1],["AMD Ryzen 5 5600G",130,"AM4",65,6,1],
+["Intel Core Ultra 9 285K",600,"LGA1851",125,24,1]])},
+cooler:{label:"CPU cooler",items:M(cooler,[
+["Thermalright Peerless Assassin 120 SE",35,155,0,A],["Thermalright Assassin X 120 Refined SE",20,148,0,A],["DeepCool AK400",30,150,0,A],["DeepCool AK620",65,160,0,A],
+["Arctic Liquid Freezer III 360",130,0,360,A],["Arctic Liquid Freezer III 240",90,0,240,A],["Arctic Freezer 36",45,159,0,A],["Noctua NH-D15 G2",150,168,0,A],
+["Cooler Master Hyper 212 Black",40,159,0,A],["be quiet! Dark Rock Pro 5",100,168,0,A],["be quiet! Pure Rock 3",40,155,0,A],["Corsair Nautilus 360 RS",110,0,360,A],
+["Lian Li Galahad II Trinity 360",130,0,360,A],["NZXT Kraken Elite 360",280,0,360,A]])},
+mobo:{label:"Motherboard",items:M(mobo,[
+["MSI MAG B650 Tomahawk WiFi",200,"AM5","DDR5","ATX"],["Gigabyte B650 Gaming X AX V2",170,"AM5","DDR5","ATX"],["ASUS TUF Gaming B650-Plus WiFi",190,"AM5","DDR5","ATX"],["MSI PRO B650M-A WiFi",140,"AM5","DDR5","mATX"],
+["ASRock B650M Pro RS",130,"AM5","DDR5","mATX"],["Gigabyte B650M K",120,"AM5","DDR5","mATX"],["MSI MAG B850 Tomahawk Max WiFi",220,"AM5","DDR5","ATX"],["Gigabyte B850 Aorus Elite WiFi7",230,"AM5","DDR5","ATX"],
+["ASUS TUF Gaming B850-Plus WiFi",220,"AM5","DDR5","ATX"],["MSI MAG X870 Tomahawk WiFi",300,"AM5","DDR5","ATX"],["ASUS ROG Strix X870E-E Gaming WiFi",500,"AM5","DDR5","ATX"],
+["Gigabyte B550M DS3H",90,"AM4","DDR4","mATX"],["MSI MAG B550 Tomahawk",150,"AM4","DDR4","ATX"],["MSI B550-A PRO",110,"AM4","DDR4","ATX"],["Gigabyte A520M DS3H",65,"AM4","DDR4","mATX"],
+["MSI MAG B760 Tomahawk WiFi",190,"LGA1700","DDR5","ATX"],["MSI PRO B760M-A WiFi DDR4",130,"LGA1700","DDR4","mATX"],["Gigabyte B760M DS3H DDR4",100,"LGA1700","DDR4","mATX"],
+["ASUS TUF Gaming Z790-Plus WiFi",250,"LGA1700","DDR5","ATX"],["Gigabyte B760 Gaming X AX",170,"LGA1700","DDR5","ATX"],["ASUS Prime B760M-A WiFi D4",130,"LGA1700","DDR4","mATX"],["MSI PRO H610M-E DDR4",80,"LGA1700","DDR4","mATX"],
+["MSI PRO Z890-P WiFi",220,"LGA1851","DDR5","ATX"],["Gigabyte Z890 Aorus Elite WiFi7",290,"LGA1851","DDR5","ATX"],["MSI PRO B860M-A WiFi",180,"LGA1851","DDR5","mATX"]])},
+ram:{label:"Memory",items:M(ram,[
+["Corsair Vengeance 32 GB (2×16) DDR5-6000 CL36",440,"DDR5",32],["G.Skill Flare X5 32 GB (2×16) DDR5-6000 CL30",470,"DDR5",32],["Kingston Fury Beast 32 GB (2×16) DDR5-6000 CL36",450,"DDR5",32],
+["G.Skill Trident Z5 Neo RGB 32 GB (2×16) DDR5-6000 CL30",470,"DDR5",32],["Crucial Pro 32 GB (2×16) DDR5-6000 CL36",440,"DDR5",32],["Corsair Vengeance LPX 16 GB (2×8) DDR4-3200",80,"DDR4",16],
+["G.Skill Ripjaws S5 16 GB (2×8) DDR5-5600",220,"DDR5",16],["Corsair Vengeance 16 GB (2×8) DDR5-6000 CL36",240,"DDR5",16],["Corsair Vengeance LPX 32 GB (2×16) DDR4-3200",150,"DDR4",32],
+["G.Skill Ripjaws V 32 GB (2×16) DDR4-3600",150,"DDR4",32],["G.Skill Ripjaws V 16 GB (2×8) DDR4-3600",90,"DDR4",16],["Kingston Fury Beast 16 GB (2×8) DDR4-3200",80,"DDR4",16],
+["Kingston Fury Beast 16 GB (2×8) DDR5-5600",210,"DDR5",16],["TeamGroup T-Force Delta RGB 32 GB (2×16) DDR5-6000",460,"DDR5",32],["Corsair Vengeance 64 GB (2×32) DDR5-6000 CL30",940,"DDR5",64],
+["G.Skill Trident Z5 Neo RGB 64 GB (2×32) DDR5-6000 CL30",960,"DDR5",64],["TeamGroup T-Force Vulcan Z 16 GB (2×8) DDR4-3200",75,"DDR4",16],["G.Skill Trident Z RGB 32 GB (2×16) DDR4-3600",170,"DDR4",32]])},
+storage:{label:"Storage",items:M(sto,[
+["Samsung 990 Pro 1 TB",220,"NVMe Gen4, 1 TB"],["WD Black SN850X 1 TB",190,"NVMe Gen4, 1 TB"],["Samsung 990 Pro 2 TB",380,"NVMe Gen4, 2 TB"],["WD Black SN850X 2 TB",360,"NVMe Gen4, 2 TB"],
+["Crucial P3 Plus 1 TB",130,"NVMe Gen4, 1 TB"],["Crucial T500 1 TB",170,"NVMe Gen4, 1 TB"],["Samsung 990 EVO Plus 1 TB",160,"NVMe Gen4, 1 TB"],["Kingston NV3 1 TB",115,"NVMe Gen4, 1 TB"],
+["Lexar NM790 1 TB",140,"NVMe Gen4, 1 TB"],["Crucial P310 1 TB",150,"NVMe Gen4, 1 TB"],["Seagate BarraCuda 4 TB",100,"Hard drive, 4 TB"],["Samsung 870 EVO 1 TB",130,"SATA SSD, 1 TB"],
+["Crucial T500 2 TB",310,"NVMe Gen4, 2 TB"],["Samsung 990 EVO Plus 2 TB",290,"NVMe Gen4, 2 TB"],["Crucial P3 Plus 2 TB",240,"NVMe Gen4, 2 TB"],["Kingston NV3 2 TB",210,"NVMe Gen4, 2 TB"],
+["Lexar NM790 2 TB",250,"NVMe Gen4, 2 TB"],["WD Blue SN5000 1 TB",130,"NVMe Gen4, 1 TB"],["Seagate BarraCuda 2 TB",65,"Hard drive, 2 TB"],["Seagate BarraCuda 8 TB",160,"Hard drive, 8 TB"],
+["WD Blue 4 TB",100,"Hard drive, 4 TB"],["Crucial MX500 1 TB",120,"SATA SSD, 1 TB"],["Samsung 9100 Pro 1 TB",250,"NVMe Gen5, 1 TB"],["WD Black SN850X 4 TB",650,"NVMe Gen4, 4 TB"]])},
+gpu:{label:"Graphics card",items:M(gpu,[
+["No graphics card (use CPU graphics)",0,0,0],["ASUS Prime GeForce RTX 5070 OC",700,250,305],["MSI Ventus 3X OC GeForce RTX 5070",700,250,308],["Gigabyte Windforce OC GeForce RTX 5070",690,250,261],
+["Gigabyte Windforce OC GeForce RTX 5060 Ti 16 GB",520,180,280],["MSI Ventus 2X OC GeForce RTX 5060 Ti 16 GB",520,180,247],["ASUS Dual OC GeForce RTX 5060",310,145,229],["MSI Ventus 2X OC GeForce RTX 5060",310,145,232],
+["Sapphire Pulse Radeon RX 9070 XT",720,304,320],["PowerColor Reaper Radeon RX 9070 XT",720,304,324],["ASUS Dual GeForce RTX 4060 OC",270,115,227],["Gigabyte Windforce GeForce RTX 5070 Ti",1000,300,300],
+["ASUS Prime GeForce RTX 5070 Ti OC",1050,300,304],["Sapphire Pulse Radeon RX 9060 XT 16 GB",440,160,240],["PowerColor Reaper Radeon RX 9060 XT 16 GB",440,160,250],["ASUS Prime GeForce RTX 5080 OC",1290,360,305],
+["MSI Ventus 3X OC GeForce RTX 5080",1290,360,308],["Sapphire Pulse Radeon RX 9070",600,220,320],["ASRock Challenger OC Intel Arc B580",280,190,243],["ASRock Challenger OC Intel Arc B570",230,150,240],
+["ASUS Dual GeForce RTX 5060 Ti 8 GB",360,180,229],["MSI Ventus 2X OC GeForce RTX 5050",260,130,232],["Sapphire Pulse Radeon RX 7800 XT",460,263,280],["Sapphire Pulse Radeon RX 7600",250,165,240]])},
+case:{label:"Case",items:M(cs,[
+["Lian Li Lancool 216",110,"ATX",392,180,360],["Fractal Design Pop Air",95,"ATX",405,170,360],["NZXT H5 Flow",95,"ATX",365,165,280],["Corsair 4000D Airflow",105,"ATX",360,170,360],
+["Montech Air 903 Max",80,"ATX",400,166,360],["Fractal Design North",140,"ATX",355,170,360],["Corsair 3000D Airflow",80,"ATX",360,170,360],["Lian Li O11 Dynamic EVO",170,"ATX",426,167,360],
+["NZXT H7 Flow",130,"ATX",400,185,360],["Cooler Master MasterBox Q300L",60,"mATX",360,159,240],["Phanteks Eclipse G360A",100,"ATX",400,163,360],["Hyte Y60",200,"ATX",422,180,360],
+["NZXT H6 Flow",130,"ATX",365,163,360],["Corsair 5000D Airflow",170,"ATX",420,170,360],["Cooler Master HAF 500",110,"ATX",410,190,360],["be quiet! Pure Base 500DX",110,"ATX",369,190,360],
+["DeepCool CC560",60,"ATX",370,175,280],["Thermaltake Versa H18",50,"mATX",350,160,240],["MSI MAG Forge 120A Airflow",60,"ATX",330,160,240],["Fractal Design Torrent",200,"ATX",423,188,420]])},
+psu:{label:"Power supply",items:M(psu,[
+["Corsair RM850e",130,850],["Corsair RM750e",110,750],["Corsair RM650e",95,650],["MSI MAG A750GL PCIE5",100,750],["Corsair RM1000e",180,1000],["MSI MAG A850GL PCIE5",120,850],
+["Thermaltake Toughpower GF A3 750 W",100,750],["Corsair CX550",65,550],["Seasonic Focus GX-750",130,750],["Thermaltake Toughpower GF A3 850 W",120,850],["Cooler Master MWE Gold 750 V2",90,750],
+["Gigabyte UD850GM PG5",100,850],["be quiet! Pure Power 12 M 850 W",130,850],["Seasonic Focus GX-850",150,850],["MSI MAG A1000GL PCIE5",150,1000],["Corsair CX750",80,750],
+["Thermaltake Toughpower GF A3 1000 W",150,1000],["Thermaltake Smart 500 W",45,500],["Corsair HX1000i",230,1000]])}
+};
+
+// Additional popular options: AM4/DDR4 value builds plus more mainstream alternatives.
+D.cpu.items.push(
+  cpu("AMD Ryzen 5 3600", 85, "AM4", 65, 6, 0),
+  cpu("AMD Ryzen 7 3700X", 125, "AM4", 65, 8, 0),
+  cpu("AMD Ryzen 5 5600X3D", 220, "AM4", 105, 6, 0),
+  cpu("AMD Ryzen 5 4500", 70, "AM4", 65, 6, 0),
+  cpu("AMD Ryzen 5 8500G", 160, "AM5", 65, 6, 1),
+  cpu("Intel Core i5-12600KF", 170, "LGA1700", 125, 10, 0),
+  cpu("Intel Core i3-13100F", 100, "LGA1700", 58, 4, 0)
+);
+D.mobo.items.push(
+  mobo("MSI B550M PRO-VDH WiFi", 100, "AM4", "DDR4", "mATX"),
+  mobo("GIGABYTE B550M K", 70, "AM4", "DDR4", "mATX"),
+  mobo("ASUS ROG Strix B550-F Gaming WiFi II", 145, "AM4", "DDR4", "ATX"),
+  mobo("ASUS Prime B550M-A WiFi II", 95, "AM4", "DDR4", "mATX"),
+  mobo("MSI B550M PRO-VDH", 85, "AM4", "DDR4", "mATX"),
+  mobo("ASRock B550M Pro4", 100, "AM4", "DDR4", "mATX"),
+  mobo("ASUS TUF Gaming B550-Plus WiFi II", 125, "AM4", "DDR4", "ATX"),
+  mobo("MSI PRO B760-P WiFi DDR4", 140, "LGA1700", "DDR4", "ATX"),
+  mobo("ASUS Prime Z790-P WiFi D4", 180, "LGA1700", "DDR4", "ATX"),
+  mobo("MSI PRO B650-S WiFi", 150, "AM5", "DDR5", "ATX"),
+  mobo("ASRock B650M-HDV/M.2", 110, "AM5", "DDR5", "mATX")
+);
+D.ram.items.push(
+  ram("TEAMGROUP T-Force Vulcan Z 32 GB (2×16) DDR4-3200", 65, "DDR4", 32),
+  ram("TEAMGROUP T-Force Vulcan Z 32 GB (2×16) DDR4-3600", 75, "DDR4", 32),
+  ram("Corsair Vengeance LPX 64 GB (2×32) DDR4-3200", 120, "DDR4", 64),
+  ram("Crucial Pro 32 GB (2×16) DDR4-3200", 65, "DDR4", 32),
+  ram("TEAMGROUP T-Force Delta RGB 32 GB (2×16) DDR4-3600", 85, "DDR4", 32),
+  ram("Patriot Viper Steel 16 GB (2×8) DDR4-3200", 35, "DDR4", 16),
+  ram("Patriot Viper Steel 32 GB (2×16) DDR4-3600", 70, "DDR4", 32),
+  ram("G.Skill Ripjaws V 64 GB (2×32) DDR4-3200", 115, "DDR4", 64),
+  ram("Corsair Vengeance 32 GB (2×16) DDR5-5600", 420, "DDR5", 32),
+  ram("Kingston Fury Beast 32 GB (2×16) DDR5-6000 CL30", 460, "DDR5", 32),
+  ram("TEAMGROUP T-Force Vulcan 32 GB (2×16) DDR5-6000", 430, "DDR5", 32)
+);
+D.gpu.items.push(
+  gpu("MSI GeForce RTX 4070 SUPER 12 GB", 600, 220, 242),
+  gpu("Gigabyte GeForce RTX 4070 SUPER Windforce OC", 620, 220, 261),
+  gpu("Sapphire Pulse Radeon RX 7700 XT", 390, 245, 280),
+  gpu("PowerColor Fighter Radeon RX 7600", 240, 165, 200),
+  gpu("XFX Speedster SWFT 210 Radeon RX 6650 XT", 240, 180, 241),
+  gpu("Intel Arc B580 12 GB", 250, 190, 272),
+  gpu("NVIDIA GeForce RTX 3060 12 GB", 280, 170, 242),
+  gpu("ASUS Dual GeForce RTX 4060 Ti 8 GB", 350, 160, 227),
+  gpu("Sapphire Pulse Radeon RX 7900 GRE", 550, 260, 320),
+  gpu("ASUS Dual Radeon RX 7800 XT", 470, 263, 280)
+);
+D.storage.items.push(
+  sto("WD Blue SN580 1 TB", 100, "NVMe Gen4, 1 TB"),
+  sto("WD Blue SN580 2 TB", 160, "NVMe Gen4, 2 TB"),
+  sto("Samsung 980 Pro 1 TB", 150, "NVMe Gen4, 1 TB"),
+  sto("Samsung 980 Pro 2 TB", 230, "NVMe Gen4, 2 TB"),
+  sto("TeamGroup MP44L 1 TB", 90, "NVMe Gen4, 1 TB"),
+  sto("TeamGroup MP44L 2 TB", 145, "NVMe Gen4, 2 TB"),
+  sto("Crucial MX500 2 TB", 180, "SATA SSD, 2 TB"),
+  sto("Seagate BarraCuda 6 TB", 125, "Hard drive, 6 TB")
+);
+D.cooler.items.push(
+  cooler("Thermalright Assassin King 120 SE", 22, 148, 0, A),
+  cooler("Thermalright Phantom Spirit 120 SE", 38, 157, 0, A),
+  cooler("ID-COOLING SE-214-XT", 20, 150, 0, A),
+  cooler("Arctic Liquid Freezer III 280", 105, 0, 280, A)
+);
+D.case.items.push(
+  cs("Montech X3 Mesh", 60, "ATX", 305, 160, 360),
+  cs("Montech AIR 100 ARGB", 65, "mATX", 330, 161, 240),
+  cs("Fractal Design Meshify C", 100, "ATX", 315, 172, 280),
+  cs("Phanteks XT Pro Ultra", 75, "ATX", 415, 184, 360),
+  cs("NZXT H5 Flow RGB", 110, "ATX", 365, 165, 280),
+  cs("Corsair 3500X", 100, "ATX", 410, 170, 360)
+);
+D.psu.items.push(
+  psu("be quiet! Pure Power 12 M 750 W", 110, 750),
+  psu("Seasonic Focus GX-650", 105, 650),
+  psu("MSI MAG A650BN", 65, 650),
+  psu("Thermaltake Smart BM3 650 W", 70, 650),
+  psu("Corsair RM850x", 150, 850),
+  psu("Corsair RM750x", 130, 750)
+);
+
+
+// More commonly chosen components across budget, mid-range, and enthusiast builds.
+D.cpu.items.push(
+  cpu("AMD Ryzen 5 7600X", 220, "AM5", 105, 6, 1),
+  cpu("AMD Ryzen 7 7700", 270, "AM5", 65, 8, 1),
+  cpu("AMD Ryzen 9 7900", 330, "AM5", 65, 12, 1),
+  cpu("Intel Core i5-13600KF", 230, "LGA1700", 125, 14, 0),
+  cpu("Intel Core i7-13700K", 330, "LGA1700", 125, 16, 1),
+  cpu("Intel Core i5-12400", 145, "LGA1700", 65, 6, 1)
+);
+D.mobo.items.push(
+  mobo("ASUS TUF Gaming B650-Plus WiFi", 180, "AM5", "DDR5", "ATX"),
+  mobo("MSI MAG B650 Tomahawk WiFi", 200, "AM5", "DDR5", "ATX"),
+  mobo("Gigabyte B650 Eagle AX", 150, "AM5", "DDR5", "ATX"),
+  mobo("ASUS Prime B760M-A D4", 120, "LGA1700", "DDR4", "mATX"),
+  mobo("Gigabyte B760M DS3H DDR4", 105, "LGA1700", "DDR4", "mATX"),
+  mobo("ASRock B450M-HDV R4.0", 65, "AM4", "DDR4", "mATX")
+);
+D.ram.items.push(
+  ram("Corsair Vengeance LPX 16 GB (2×8) DDR4-3200", 38, "DDR4", 16),
+  ram("Silicon Power Gaming 32 GB (2×16) DDR4-3200", 55, "DDR4", 32),
+  ram("Kingston Fury Beast 32 GB (2×16) DDR4-3600", 68, "DDR4", 32),
+  ram("G.Skill Ripjaws S5 32 GB (2×16) DDR5-6000 CL30", 100, "DDR5", 32),
+  ram("Corsair Vengeance 64 GB (2×32) DDR5-6000", 190, "DDR5", 64),
+  ram("Kingston Fury Beast 16 GB (2×8) DDR5-5600", 55, "DDR5", 16),
+  ram("G.Skill Trident Z5 Neo RGB 32 GB (2×16) DDR5-6000", 115, "DDR5", 32)
+);
+D.gpu.items.push(
+  gpu("ASUS Dual GeForce RTX 4060 8 GB", 300, 115, 227),
+  gpu("Gigabyte GeForce RTX 4060 Ti 16 GB", 430, 165, 281),
+  gpu("XFX Speedster QICK 319 Radeon RX 6750 XT", 330, 250, 323),
+  gpu("Sapphire Pulse Radeon RX 7600 XT 16 GB", 300, 190, 240),
+  gpu("PowerColor Hellhound Radeon RX 7900 XT", 680, 315, 320),
+  gpu("MSI GeForce RTX 5070 Ti 16 GB", 780, 300, 338),
+  gpu("Gigabyte GeForce RTX 5080 16 GB", 1000, 360, 304)
+);
+D.storage.items.push(
+  sto("Crucial P3 Plus 2 TB", 125, "NVMe Gen4, 2 TB"),
+  sto("Kingston NV3 1 TB", 65, "NVMe Gen4, 1 TB"),
+  sto("Kingston NV3 2 TB", 110, "NVMe Gen4, 2 TB"),
+  sto("Lexar NM790 2 TB", 135, "NVMe Gen4, 2 TB"),
+  sto("Samsung 990 EVO Plus 2 TB", 160, "NVMe Gen4, 2 TB"),
+  sto("Seagate BarraCuda 4 TB", 90, "Hard drive, 4 TB")
+);
+D.cooler.items.push(
+  cooler("DeepCool AK400", 35, 155, 0, A),
+  cooler("Noctua NH-D15 chromax.black", 120, 165, 0, A),
+  cooler("Cooler Master Hyper 212 Halo", 45, 154, 0, A),
+  cooler("Arctic Liquid Freezer III 240", 90, 0, 240, A),
+  cooler("Corsair iCUE H150i Elite Capellix XT", 180, 0, 360, A)
+);
+D.case.items.push(
+  cs("Corsair 4000D Airflow", 90, "ATX", 360, 170, 360),
+  cs("Fractal Design North", 140, "ATX", 355, 170, 360),
+  cs("Lian Li O11 Vision", 140, "ATX", 455, 167, 360),
+  cs("Cooler Master NR200", 90, "mATX", 330, 155, 280),
+  cs("Fractal Design Pop Air", 90, "ATX", 405, 170, 360)
+);
+D.psu.items.push(
+  psu("Corsair CX650M 650 W", 75, 650),
+  psu("be quiet! Pure Power 12 M 850 W", 130, 850),
+  psu("Seasonic Focus GX-850", 140, 850),
+  psu("Thermaltake Toughpower GF A3 750 W", 100, 750),
+  psu("MSI MAG A850GL PCIE5", 110, 850)
+);
+
+
+// Expanded catalog: more platform choices, generations, and accessory categories.
+// Prices are rough planning estimates, not live retailer quotes.
+D.cpu.items.push(
+ cpu("AMD Ryzen 5 7500F",155,"AM5",65,6,0),cpu("AMD Ryzen 5 7600",195,"AM5",65,6,1),
+ cpu("AMD Ryzen 7 7800X3D",420,"AM5",120,8,1),cpu("AMD Ryzen 9 7900X",360,"AM5",170,12,1),
+ cpu("AMD Ryzen 9 7950X",500,"AM5",170,16,1),cpu("AMD Ryzen 7 8700G",270,"AM5",65,8,1),
+ cpu("AMD Ryzen 5 8600G",190,"AM5",65,6,1),cpu("AMD Ryzen 5 8500G",150,"AM5",65,6,1),
+ cpu("AMD Ryzen 5 4500",70,"AM4",65,6,0),cpu("AMD Ryzen 5 5500",85,"AM4",65,6,0),
+ cpu("AMD Ryzen 7 5700G",160,"AM4",65,8,1),cpu("AMD Ryzen 9 5900X",240,"AM4",105,12,0),
+ cpu("Intel Core i3-12100",120,"LGA1700",60,4,1),cpu("Intel Core i5-12500",190,"LGA1700",65,6,1),
+ cpu("Intel Core i5-13500",240,"LGA1700",65,14,1),cpu("Intel Core i5-14500",250,"LGA1700",65,14,1),
+ cpu("Intel Core i7-13700F",320,"LGA1700",65,16,0),cpu("Intel Core i9-13900K",450,"LGA1700",125,24,1),
+ cpu("Intel Core i9-14900KF",430,"LGA1700",125,24,0),cpu("Intel Core Ultra 5 225",240,"LGA1851",65,10,1),
+ cpu("Intel Core Ultra 7 265",340,"LGA1851",65,20,1),cpu("Intel Core Ultra 9 285",550,"LGA1851",65,24,1)
+);
+D.cooler.items.push(
+ cooler("Thermalright Phantom Spirit 120 EVO",45,157,0,A),cooler("Thermalright Frozen Notte 240",55,0,240,A),
+ cooler("Thermalright Frozen Notte 360",70,0,360,A),cooler("ARCTIC Liquid Freezer III Pro 360",140,0,360,A),
+ cooler("ARCTIC Liquid Freezer III Pro 280",120,0,280,A),cooler("NZXT Kraken 240",140,0,240,A),
+ cooler("NZXT Kraken 360 RGB",220,0,360,A),cooler("Corsair iCUE LINK H150i LCD",280,0,360,A),
+ cooler("Lian Li Galahad II LCD 360",230,0,360,A),cooler("be quiet! Pure Loop 2 FX 360",160,0,360,A),
+ cooler("Noctua NH-U12S redux",55,158,0,A),cooler("Noctua NH-U12A chromax.black",120,158,0,A),
+ cooler("Scythe Fuma 3",50,154,0,A),cooler("Cooler Master MasterLiquid 240 Atmos",120,0,240,A)
+);
+D.mobo.items.push(
+ mobo("ASUS ROG Strix B650E-F Gaming WiFi",260,"AM5","DDR5","ATX"),
+ mobo("ASRock B650E Steel Legend WiFi",240,"AM5","DDR5","ATX"),
+ mobo("ASUS Prime X670-P WiFi",230,"AM5","DDR5","ATX"),
+ mobo("ASRock X670E Pro RS",230,"AM5","DDR5","ATX"),
+ mobo("Gigabyte X870 Aorus Elite WiFi7",280,"AM5","DDR5","ATX"),
+ mobo("ASRock B850 Pro RS WiFi",180,"AM5","DDR5","ATX"),
+ mobo("ASUS Prime A620M-A",90,"AM5","DDR5","mATX"),
+ mobo("Gigabyte A620M S2H",80,"AM5","DDR5","mATX"),
+ mobo("ASRock B450M Pro4 R2.0",80,"AM4","DDR4","mATX"),
+ mobo("MSI B550M PRO-VDH WiFi",100,"AM4","DDR4","mATX"),
+ mobo("ASUS ROG Crosshair X870E Hero",650,"AM5","DDR5","ATX"),
+ mobo("ASUS ROG Maximus Z790 Hero",600,"LGA1700","DDR5","ATX"),
+ mobo("MSI MAG Z790 Tomahawk MAX WiFi",270,"LGA1700","DDR5","ATX"),
+ mobo("ASRock Z790 Steel Legend WiFi",230,"LGA1700","DDR5","ATX"),
+ mobo("Gigabyte Z790 Aorus Elite AX",250,"LGA1700","DDR5","ATX"),
+ mobo("ASUS Prime H610M-E D4",75,"LGA1700","DDR4","mATX"),
+ mobo("ASUS ROG Strix Z890-E Gaming WiFi",500,"LGA1851","DDR5","ATX"),
+ mobo("ASRock B860 Pro RS WiFi",180,"LGA1851","DDR5","ATX")
+);
+D.ram.items.push(
+ ram("Corsair Vengeance 96 GB (2×48) DDR5-6000",280,"DDR5",96),ram("Corsair Vengeance 128 GB (4×32) DDR5-5600",430,"DDR5",128),
+ ram("G.Skill Flare X5 64 GB (2×32) DDR5-6000",180,"DDR5",64),ram("G.Skill Flare X5 32 GB (2×16) DDR5-5600",90,"DDR5",32),
+ ram("G.Skill Ripjaws S5 64 GB (2×32) DDR5-6000",190,"DDR5",64),ram("G.Skill Trident Z5 RGB 32 GB DDR5-6400",130,"DDR5",32),
+ ram("Kingston Fury Renegade 32 GB DDR5-6400",125,"DDR5",32),ram("Kingston Fury Beast 64 GB DDR5-5600",170,"DDR5",64),
+ ram("TeamGroup T-Create Expert 32 GB DDR5-6000",95,"DDR5",32),ram("TeamGroup T-Create Expert 64 GB DDR5-6000",175,"DDR5",64),
+ ram("Patriot Viper Venom 32 GB DDR5-6000",90,"DDR5",32),ram("Patriot Viper Steel 64 GB DDR4-3600",115,"DDR4",64),
+ ram("Silicon Power XPOWER Zenith 32 GB DDR5-6000",85,"DDR5",32),ram("Crucial Pro 64 GB DDR5-5600",160,"DDR5",64),
+ ram("Corsair Vengeance LPX 32 GB DDR4-3600",70,"DDR4",32),ram("G.Skill Ripjaws V 32 GB DDR4-3200",60,"DDR4",32),
+ ram("Kingston Fury Beast 32 GB DDR4-3200",65,"DDR4",32),ram("TEAMGROUP T-Force Delta RGB 32 GB DDR5-6000",105,"DDR5",32)
+);
+D.storage.items.push(
+ sto("Samsung 990 Pro 4 TB",340,"NVMe Gen4, 4 TB"),sto("Samsung 990 EVO Plus 4 TB",300,"NVMe Gen4, 4 TB"),
+ sto("WD Black SN850X 4 TB",300,"NVMe Gen4, 4 TB"),sto("WD Black SN770 1 TB",90,"NVMe Gen4, 1 TB"),
+ sto("WD Black SN770 2 TB",130,"NVMe Gen4, 2 TB"),sto("WD Black SN850X 1 TB with heatsink",115,"NVMe Gen4, 1 TB"),
+ sto("Crucial T700 1 TB",150,"NVMe Gen5, 1 TB"),sto("Crucial T700 2 TB",230,"NVMe Gen5, 2 TB"),
+ sto("Crucial T705 2 TB",280,"NVMe Gen5, 2 TB"),sto("Corsair MP700 Pro 2 TB",260,"NVMe Gen5, 2 TB"),
+ sto("Sabrent Rocket 4 Plus 2 TB",160,"NVMe Gen4, 2 TB"),sto("Sabrent Rocket 5 2 TB",300,"NVMe Gen5, 2 TB"),
+ sto("Kingston KC3000 2 TB",150,"NVMe Gen4, 2 TB"),sto("Solidigm P44 Pro 2 TB",160,"NVMe Gen4, 2 TB"),
+ sto("Crucial MX500 4 TB",300,"SATA SSD, 4 TB"),sto("Samsung 870 QVO 2 TB",150,"SATA SSD, 2 TB"),
+ sto("Seagate IronWolf 8 TB",190,"NAS hard drive, 8 TB"),sto("WD Red Plus 8 TB",180,"NAS hard drive, 8 TB"),
+ sto("Seagate IronWolf Pro 12 TB",280,"NAS hard drive, 12 TB"),sto("WD Blue 2 TB",60,"Hard drive, 2 TB"),
+ sto("Seagate Exos 16 TB",300,"Enterprise hard drive, 16 TB"),sto("Crucial X9 Pro 2 TB",130,"External SSD, 2 TB"),
+ sto("Samsung T7 Shield 1 TB",100,"External SSD, 1 TB"),sto("SanDisk Extreme Portable SSD 2 TB",150,"External SSD, 2 TB")
+);
+D.gpu.items.push(
+ gpu("NVIDIA GeForce RTX 5090 32 GB",2000,575,360),gpu("NVIDIA GeForce RTX 5080 16 GB",1000,360,304),
+ gpu("NVIDIA GeForce RTX 5070 12 GB",600,250,305),gpu("NVIDIA GeForce RTX 5060 Ti 16 GB",470,180,280),
+ gpu("NVIDIA GeForce RTX 5060 8 GB",300,145,230),gpu("NVIDIA GeForce RTX 4060 8 GB",290,115,227),
+ gpu("NVIDIA GeForce RTX 4070 Ti SUPER 16 GB",800,285,305),gpu("NVIDIA GeForce RTX 4080 SUPER 16 GB",1000,320,310),
+ gpu("AMD Radeon RX 7900 XTX 24 GB",850,355,345),gpu("AMD Radeon RX 7900 XT 20 GB",700,315,320),
+ gpu("AMD Radeon RX 7900 GRE 16 GB",550,260,320),gpu("AMD Radeon RX 7800 XT 16 GB",470,263,300),
+ gpu("AMD Radeon RX 7700 XT 12 GB",400,245,280),gpu("AMD Radeon RX 6750 XT 12 GB",330,250,323),
+ gpu("AMD Radeon RX 6700 XT 12 GB",300,230,280),gpu("AMD Radeon RX 6650 XT 8 GB",240,180,241),
+ gpu("AMD Radeon RX 6600 8 GB",200,132,235),gpu("AMD Radeon RX 7600 XT 16 GB",310,190,270),
+ gpu("AMD Radeon RX 9060 XT 8 GB",330,160,250),gpu("AMD Radeon RX 9070 XT 16 GB",720,304,320),
+ gpu("Intel Arc A770 16 GB",280,225,267),gpu("Intel Arc A750 8 GB",200,225,267),
+ gpu("Intel Arc B580 12 GB",250,190,272),gpu("Intel Arc B570 10 GB",230,150,240)
+);
+D.case.items.push(
+ cs("Fractal Design Define 7",170,"ATX",491,185,360),cs("Fractal Design Meshify 2",160,"ATX",491,185,360),
+ cs("Fractal Design Terra",180,"mATX",322,77,120),cs("Fractal Design Ridge",130,"mATX",325,70,120),
+ cs("Cooler Master MasterBox NR600",85,"ATX",410,166,360),cs("Cooler Master TD500 Mesh V2",100,"ATX",410,165,360),
+ cs("Cooler Master MasterBox 520 Mesh",90,"ATX",410,165,360),cs("Phanteks NV5",110,"ATX",440,180,360),
+ cs("Phanteks Enthoo Pro 2",160,"ATX",503,195,480),cs("Lian Li Lancool III",150,"ATX",435,187,420),
+ cs("Lian Li Lancool 205 Mesh C",90,"ATX",350,160,280),cs("Lian Li O11 Dynamic Mini",120,"mATX",395,170,360),
+ cs("Montech King 95 Pro",150,"ATX",420,175,360),cs("Montech Sky Two GX",100,"ATX",400,168,360),
+ cs("Montech XR",65,"ATX",420,175,360),cs("Montech Air 100 Lite",50,"mATX",330,161,240),
+ cs("NZXT H9 Flow",160,"ATX",435,165,360),cs("NZXT H3 Flow",75,"mATX",377,170,280),
+ cs("Corsair 2500D Airflow",100,"mATX",400,180,360),cs("Corsair 6500D Airflow",200,"ATX",400,190,360),
+ cs("HYTE Y40",150,"ATX",422,183,360),cs("HYTE Y70 Touch",380,"ATX",422,180,360),
+ cs("Thermaltake Core V21",80,"mATX",350,185,280),cs("Thermaltake View 270 TG ARGB",80,"ATX",420,180,360)
+);
+D.psu.items.push(
+ psu("Corsair RM1200x Shift",250,1200),psu("Corsair RM1000x Shift",200,1000),psu("Corsair SF850",180,850),
+ psu("Corsair SF750",170,750),psu("Seasonic Vertex GX-1200",270,1200),psu("Seasonic Vertex GX-1000",220,1000),
+ psu("Seasonic Focus GX-850 ATX 3.0",150,850),psu("be quiet! Dark Power 13 1000 W",260,1000),
+ psu("be quiet! Pure Power 12 M 650 W",100,650),psu("MSI MAG A550BN",55,550),
+ psu("MSI MAG A750GL PCIE5",100,750),psu("MSI MAG A1000GL PCIE5",160,1000),
+ psu("Thermaltake Toughpower GF3 1200 W",230,1200),psu("Thermaltake Toughpower GF3 1000 W",180,1000),
+ psu("Cooler Master V850 Gold i",160,850),psu("Cooler Master MWE Bronze 650 V2",70,650),
+ psu("EVGA SuperNOVA 850 GT",130,850),psu("EVGA SuperNOVA 1000 G7",190,1000)
+);
+// Expanded compatibility-era coverage and additional value/legacy models.
+// Price values are rough USD shopping estimates; generated Amazon links search by exact model name.
+function addIfMissing(category, part) {
+  if (!D[category].items.some(existing => existing.n === part.n)) D[category].items.push(part);
+}
+// Add common older sockets for legacy Intel parts and entry-level upgrade builds.
+for (const socket of ["LGA1200", "LGA1151"]) if (!A.includes(socket)) A.push(socket);
+
+// More CPUs: entry-level, older AM4, Intel 10th/11th and 8th/9th generation.
+[
+  ["AMD Ryzen 3 3100",55,"AM4",65,4,0], ["AMD Ryzen 3 4100",60,"AM4",65,4,0],
+  ["AMD Ryzen 5 3500X",70,"AM4",65,6,0], ["AMD Ryzen 7 2700X",75,"AM4",105,8,0],
+  ["AMD Athlon 3000G",45,"AM4",35,2,1], ["AMD Ryzen 5 2600",55,"AM4",65,6,0],
+  ["AMD Ryzen 5 5500GT",105,"AM4",65,6,1], ["AMD Ryzen 7 5700",145,"AM4",65,8,0],
+  ["Intel Core i3-10100F",55,"LGA1200",65,4,0], ["Intel Core i5-10400F",85,"LGA1200",65,6,0],
+  ["Intel Core i5-10600K",100,"LGA1200",125,6,1], ["Intel Core i5-11400F",90,"LGA1200",65,6,0],
+  ["Intel Core i7-10700",130,"LGA1200",65,8,1], ["Intel Core i7-11700F",145,"LGA1200",65,8,0],
+  ["Intel Core i3-9100F",40,"LGA1151",65,4,0], ["Intel Core i5-9400F",60,"LGA1151",65,6,0],
+  ["Intel Core i7-9700K",115,"LGA1151",95,8,1], ["Intel Core i9-9900K",170,"LGA1151",95,8,1]
+].forEach(x => addIfMissing("cpu", cpu(...x)));
+
+// More boards across budget chipsets and legacy sockets.
+[
+  ["MSI B560M PRO-VDH WiFi",80,"LGA1200","DDR4","mATX"],
+  ["Gigabyte B560M DS3H AC",75,"LGA1200","DDR4","mATX"],
+  ["ASUS Prime H510M-E",65,"LGA1200","DDR4","mATX"],
+  ["ASUS TUF Gaming Z590-Plus WiFi",125,"LGA1200","DDR4","ATX"],
+  ["MSI MAG B560 Tomahawk WiFi",110,"LGA1200","DDR4","ATX"],
+  ["Gigabyte B365M DS3H",65,"LGA1151","DDR4","mATX"],
+  ["MSI B365M PRO-VDH",60,"LGA1151","DDR4","mATX"],
+  ["ASUS Prime Z390-P",100,"LGA1151","DDR4","ATX"],
+  ["Gigabyte H310M S2H",55,"LGA1151","DDR4","mATX"],
+  ["ASRock B450M-HDV R4.0",60,"AM4","DDR4","mATX"],
+  ["ASUS Prime A520M-K",55,"AM4","DDR4","mATX"],
+  ["Gigabyte A520I AC",95,"AM4","DDR4","mATX"],
+  ["ASRock B550 Phantom Gaming 4",95,"AM4","DDR4","ATX"],
+  ["ASUS Prime B650M-A AX II",125,"AM5","DDR5","mATX"],
+  ["ASRock A620M-HDV/M.2+",75,"AM5","DDR5","mATX"],
+  ["MSI PRO H610M-G DDR4",70,"LGA1700","DDR4","mATX"],
+  ["ASUS Prime B760M-K D4",85,"LGA1700","DDR4","mATX"]
+].forEach(x => addIfMissing("mobo", mobo(...x)));
+
+// More affordable DDR4 and DDR5 memory kits.
+[
+  ["TEAMGROUP Elite 16 GB (2×8) DDR4-3200",30,"DDR4",16],
+  ["Silicon Power 16 GB (2×8) DDR4-3200",28,"DDR4",16],
+  ["Patriot Signature Premium 32 GB (2×16) DDR4-3200",48,"DDR4",32],
+  ["OLOy DDR4 32 GB (2×16) DDR4-3200",45,"DDR4",32],
+  ["Crucial Pro 16 GB (2×8) DDR4-3200",32,"DDR4",16],
+  ["Kingston Fury Beast 8 GB DDR4-3200",18,"DDR4",8],
+  ["TEAMGROUP T-Force Vulcan 16 GB (2×8) DDR5-5600",48,"DDR5",16],
+  ["Silicon Power 32 GB (2×16) DDR5-6000",78,"DDR5",32],
+  ["Patriot Viper Venom 16 GB (2×8) DDR5-5600",50,"DDR5",16],
+  ["Crucial Pro 32 GB (2×16) DDR5-5600",82,"DDR5",32],
+  ["G.Skill Ripjaws S5 64 GB (2×32) DDR5-5600",160,"DDR5",64],
+  ["Kingston Fury Beast 64 GB (2×32) DDR4-3200",100,"DDR4",64]
+].forEach(x => addIfMissing("ram", ram(...x)));
+
+// More GPUs from entry-level cards through older high-end options. RX 550 is included in 2 GB and 4 GB variants.
+[
+  ["PowerColor Red Dragon Radeon RX 550 2 GB",50,50,170],
+  ["AMD Radeon RX 550 4 GB",65,50,180],
+  ["Sapphire Pulse Radeon RX 560 4 GB",75,80,210],
+  ["XFX Radeon RX 570 4 GB",70,150,270],
+  ["Sapphire Nitro+ Radeon RX 580 8 GB",95,185,260],
+  ["XFX Radeon RX 590 Fatboy 8 GB",110,225,270],
+  ["Sapphire Pulse Radeon RX 5500 XT 8 GB",120,130,230],
+  ["Sapphire Pulse Radeon RX 5600 XT 6 GB",130,150,254],
+  ["XFX Thicc II Radeon RX 5700 XT 8 GB",150,225,290],
+  ["ASRock Challenger Radeon RX 6400 4 GB",130,53,162],
+  ["PowerColor Radeon RX 6500 XT 4 GB",140,107,200],
+  ["Sapphire Pulse Radeon RX 6600 XT 8 GB",190,160,240],
+  ["MSI Radeon RX 6700 XT 12 GB",240,230,280],
+  ["PowerColor Fighter Radeon RX 6800 16 GB",300,250,300],
+  ["XFX Speedster MERC Radeon RX 6800 XT 16 GB",330,300,340],
+  ["Sapphire Nitro+ Radeon RX 6900 XT 16 GB",350,300,320],
+  ["NVIDIA GeForce GTX 750 Ti 2 GB",45,60,170],
+  ["EVGA GeForce GTX 950 2 GB",50,90,210],
+  ["MSI GeForce GTX 960 4 GB",55,120,267],
+  ["EVGA GeForce GTX 970 4 GB",65,145,242],
+  ["MSI GeForce GTX 1050 Ti 4 GB",75,75,215],
+  ["Gigabyte GeForce GTX 1060 6 GB",80,120,280],
+  ["MSI GeForce GTX 1650 4 GB",100,75,245],
+  ["Zotac GeForce GTX 1660 SUPER 6 GB",130,125,220],
+  ["EVGA GeForce RTX 2060 6 GB",140,160,270],
+  ["Gigabyte GeForce RTX 2070 SUPER 8 GB",180,215,286],
+  ["MSI GeForce RTX 3050 6 GB",160,70,204],
+  ["EVGA GeForce RTX 3060 Ti 8 GB",220,200,285],
+  ["MSI GeForce RTX 3070 8 GB",250,220,323],
+  ["EVGA GeForce RTX 3080 10 GB",320,320,300],
+  ["ASRock Intel Arc A380 6 GB",100,75,191],
+  ["ASRock Intel Arc A580 8 GB",160,185,271],
+  ["ASRock Intel Arc A750 8 GB",180,225,267],
+  ["Sapphire Pulse Radeon RX 7600 8 GB",230,165,240],
+  ["XFX Speedster SWFT 210 Radeon RX 7700 XT 12 GB",360,245,280]
+].forEach(x => addIfMissing("gpu", gpu(...x)));
+
+// Okinos case lineup plus additional budget and compact cases users commonly shop for.
+[
+  ["Okinos Aqua 3 ARGB Micro ATX Case",82.99,"mATX",330,160,240],
+  ["Okinos Aqua 3 Air Micro ATX Case",60,"mATX",330,160,240],
+  ["Okinos Aqua 6 Infinity ATX Case",123.99,"ATX",400,180,360],
+  ["Okinos Aqua 7 ATX Mid Tower Case",85,"ATX",400,175,360],
+  ["Okinos Aqua 9 ARGB ATX Mid Tower Case",166.99,"ATX",420,180,360],
+  ["Okinos Aqua UNO Micro ATX Case",79.99,"mATX",309,160,0],
+  ["Okinos MiniArt 4 Micro ATX Case",101.99,"mATX",330,160,240],
+  ["Okinos Mirage 4 Black Micro ATX Case",59.99,"mATX",325,155,240],
+  ["Okinos Mirage 4 White Micro ATX Case",101.99,"mATX",325,155,240],
+  ["Okinos Cypress 3 Wood Micro ATX Case",80,"mATX",330,160,240],
+  ["Okinos Cypress 3 ARGB Micro ATX Case",70,"mATX",330,160,240],
+  ["Okinos Cypress 5 Air ATX Case",99.99,"ATX",400,175,360],
+  ["Okinos Cypress 7 Wood ATX Case",146.99,"ATX",420,180,360],
+  ["Okinos Air Cross Walnut ATX Case",128.99,"ATX",420,180,360],
+  ["Okinos 612 ARGB ATX Mid Tower Case",100,"ATX",420,180,360],
+  ["Apevia Prodigy ATX Mid Tower Case",55,"ATX",330,160,240],
+  ["Apevia Genesis Pro ATX Case",70,"ATX",350,165,280],
+  ["DIYPC ARGB-Q3 Micro ATX Case",55,"mATX",330,160,240],
+  ["SAMA IM01 Micro ATX Case",60,"mATX",335,155,280],
+  ["SAMA ARGB-Q5 Micro ATX Case",60,"mATX",330,160,240],
+  ["Thermaltake Versa H17 Micro ATX Case",45,"mATX",350,155,240],
+  ["Thermaltake Versa H18 TG Micro ATX Case",50,"mATX",350,160,240],
+  ["Antec NX200M Micro ATX Case",50,"mATX",275,150,240],
+  ["Antec NX410 ATX Mid Tower Case",75,"ATX",335,165,360],
+  ["Zalman S2 ATX Mid Tower Case",55,"ATX",330,156,240],
+  ["Zalman T6 ATX Mid Tower Case",45,"ATX",280,156,240],
+  ["SilverStone FARA H1M Micro ATX Case",60,"mATX",320,160,240],
+  ["Montech AIR 100 Lite Micro ATX Case",50,"mATX",330,161,240],
+  ["Montech X2 Mesh ATX Case",55,"ATX",305,160,240],
+  ["Montech Air 1000 Lite ATX Case",70,"ATX",340,170,360],
+  ["DeepCool Matrexx 30 Micro ATX Case",40,"mATX",250,151,240],
+  ["DeepCool Matrexx 40 3FS Micro ATX Case",55,"mATX",320,165,320]
+].forEach(x => addIfMissing("case", cs(...x)));
+
+// Storage options at lower capacity / lower cost and higher capacity.
+[
+  ["Kingston A400 240 GB SATA SSD",22,"SATA SSD, 240 GB"],
+  ["Kingston A400 480 GB SATA SSD",30,"SATA SSD, 480 GB"],
+  ["Crucial BX500 500 GB SATA SSD",35,"SATA SSD, 500 GB"],
+  ["Crucial BX500 1 TB SATA SSD",58,"SATA SSD, 1 TB"],
+  ["Samsung 870 EVO 500 GB",55,"SATA SSD, 500 GB"],
+  ["TEAMGROUP GX2 1 TB SATA SSD",50,"SATA SSD, 1 TB"],
+  ["Silicon Power A55 1 TB SATA SSD",48,"SATA SSD, 1 TB"],
+  ["Lexar NM620 512 GB",38,"NVMe Gen3, 512 GB"],
+  ["WD Green SN350 1 TB",55,"NVMe Gen3, 1 TB"],
+  ["WD Black SN770 500 GB",48,"NVMe Gen4, 500 GB"],
+  ["Crucial P3 500 GB",40,"NVMe Gen3, 500 GB"],
+  ["Crucial P3 2 TB",100,"NVMe Gen3, 2 TB"],
+  ["TeamGroup MP33 1 TB",55,"NVMe Gen3, 1 TB"],
+  ["TeamGroup MP44L 500 GB",38,"NVMe Gen4, 500 GB"],
+  ["ADATA Legend 800 1 TB",58,"NVMe Gen4, 1 TB"],
+  ["Samsung 870 QVO 4 TB",260,"SATA SSD, 4 TB"],
+  ["Seagate BarraCuda 1 TB",45,"Hard drive, 1 TB"],
+  ["Seagate BarraCuda 2 TB 3.5-inch HDD",60,"Hard drive, 2 TB"],
+  ["Toshiba P300 2 TB HDD",58,"Hard drive, 2 TB"],
+  ["WD Blue 6 TB HDD",125,"Hard drive, 6 TB"],
+  ["Seagate IronWolf 4 TB HDD",95,"NAS hard drive, 4 TB"]
+].forEach(x => addIfMissing("storage", sto(...x)));
+
+// Additional budget and midrange air/AIO coolers.
+[
+  ["AMD Wraith Stealth stock cooler",0,54,0,A],
+  ["Intel Laminar RM1 stock cooler",0,47,0,A],
+  ["ID-COOLING SE-903-XT",18,123,0,A],
+  ["Thermalright Assassin X 90 SE",18,110,0,A],
+  ["Thermalright Assassin Spirit 120 EVO",22,156,0,A],
+  ["Vetroo V5 CPU Air Cooler",25,148,0,A],
+  ["ARCTIC Freezer 7 X",25,132,0,A],
+  ["Cooler Master Hyper 212 Spectrum V3",30,152,0,A],
+  ["DeepCool LE520 240 mm AIO",65,0,240,A],
+  ["Thermaltake TH240 V2 ARGB AIO",80,0,240,A],
+  ["Corsair H100x RGB Elite 240 mm AIO",95,0,240,A]
+].forEach(x => addIfMissing("cooler", cooler(...x)));
+
+// More sensible entry / mainstream PSUs, with wattage shown for build checks.
+[
+  ["EVGA 500 W1 500 W",45,500],
+  ["Thermaltake Smart 600 W",50,600],
+  ["Thermaltake Smart 700 W",60,700],
+  ["Corsair CV550 550 W",55,550],
+  ["Corsair CV650 650 W",65,650],
+  ["Cooler Master MWE Bronze 550 V2",55,550],
+  ["Cooler Master MWE Bronze 750 V2",75,750],
+  ["MSI MAG A550BN 550 W",55,550],
+  ["MSI MAG A650BN 650 W",65,650],
+  ["MSI MAG A750BN 750 W",75,750],
+  ["be quiet! System Power 10 650 W",70,650],
+  ["Seasonic S12III 550 W",55,550],
+  ["XPG Pylon 650 W",65,650],
+  ["ADATA XPG Core Reactor II 850 W",115,850],
+  ["NZXT C750 Gold 750 W",100,750],
+  ["NZXT C850 Gold 850 W",120,850],
+  ["Corsair RMx Shift Series RM850x 850 W",160,850]
+].forEach(x => addIfMissing("psu", psu(...x)));
+
+// Keep the catalog focused on actual PC build components: CPU, cooler, motherboard, RAM, storage, GPU, case, and PSU.
+
+
+// Popular-pick price refresh: October 26, 2026. Prices are estimates unless an exact Amazon US model was verified.
+// Amazon prices vary by seller, stock, and checkout; this standalone file cannot fetch live checkout prices.
+const PRICE_REFRESH = {
+  // Prices checked against current US retailer/price-tracker observations on Oct 26, 2026.
+  // Exact Amazon-indexed offers are noted below; other entries remain estimates.
+  "AMD Ryzen 5 5600": 119,
+  "AMD Ryzen 5 9600X": 173,
+  "AMD Ryzen 7 9800X3D": 399,
+  "AMD Ryzen 7 5800X3D": 339,
+  "Intel Core Ultra 9 285K": 485,
+  "NVIDIA GeForce RTX 5060 Ti 16 GB": 766,
+  "ASUS Dual GeForce RTX 5060 Ti OC Edition 16GB GDDR7": 766,
+  "NVIDIA GeForce RTX 5060 Ti 8 GB": 520,
+  "ASUS Dual GeForce RTX 5060 Ti OC Edition 8GB GDDR7": 547,
+  "AMD Radeon RX 9070 XT 16 GB": 920,
+  "ASUS Prime Radeon RX 9070 XT OC Edition 16GB GDDR6": 1080,
+  "MSI B550M PRO-VDH WIFI": 79.99,
+  "MSI B550M PRO-VDH WiFi": 79.99,
+  // Updated prices for parts used by Popular Picks (current market estimates, not live quotes)
+  "AMD Ryzen 5 7600": 209,
+  "AMD Ryzen 9 9950X": 538,
+  "AMD Ryzen 5 5600G": 158.88,
+  "Thermalright Peerless Assassin 120 SE": 33,
+  "Thermalright Assassin X 120 Refined SE": 20,
+  "Arctic Liquid Freezer III 360": 100,
+  "Noctua NH-D15 G2": 150,
+  "Gigabyte B550M DS3H": 90,
+  "MSI PRO B650M-A WiFi": 140,
+  "MSI MAG X870 Tomahawk WiFi": 300,
+  "Gigabyte A520M DS3H": 65,
+  "Corsair Vengeance LPX 32 GB (2×16) DDR4-3200": 259.99,
+  "Corsair Vengeance 32 GB (2×16) DDR5-6000 CL36": 529.99,
+  "G.Skill Flare X5 32 GB (2×16) DDR5-6000 CL30": 630,
+  "Corsair Vengeance 64 GB (2×32) DDR5-6000 CL30": 1275,
+  "Corsair Vengeance LPX 16 GB (2×8) DDR4-3200": 139.99,
+  "TEAMGROUP T-Force Vulcan Z 32 GB (2×16) DDR4-3200": 239.90,
+  "Crucial P3 Plus 1 TB": 156.63,
+  "WD Black SN850X 1 TB": 247.90,
+  "Samsung 990 Pro 2 TB": 409.99,
+  "WD Blue SN580 1 TB": 130,
+  "ASUS Dual OC GeForce RTX 5060": 469.99,
+  "ASUS Prime GeForce RTX 5070 OC": 700,
+  "Sapphire Pulse Radeon RX 9070 XT": 899.99,
+  "Gigabyte Windforce GeForce RTX 5070 Ti": 1000,
+  "XFX Speedster SWFT 210 Radeon RX 6650 XT": 240,
+  "Montech Air 903 Max": 80,
+  "Lian Li Lancool 216": 100,
+  "Cooler Master MasterBox Q300L": 60,
+  "Montech X3 Mesh": 60,
+  "Corsair RM650e": 128.76,
+  "Corsair RM750e": 89.99,
+  "Corsair RM850e": 115.97,
+  "Corsair RM1000e": 150,
+  "Corsair CX550": 55,
+  "MSI MAG A650BN": 60,
+  // Current Okinos price observations (US listings; prices and sellers vary).
+  "Okinos Mirage 4 Black Micro ATX Case": 59.99,
+  "Okinos Mirage 4 White Micro ATX Case": 101.99,
+  "Okinos Aqua 3 ARGB Micro ATX Case": 82.99,
+  "Okinos Aqua 6 Infinity ATX Case": 123.99,
+  "Okinos Aqua 9 ARGB ATX Mid Tower Case": 166.99,
+  "Okinos Aqua UNO Micro ATX Case": 79.99,
+  "Okinos MiniArt 4 Micro ATX Case": 101.99,
+  "Okinos Cypress 5 Air ATX Case": 99.99,
+  "Okinos Cypress 7 Wood ATX Case": 146.99,
+  "Okinos Air Cross Walnut ATX Case": 128.99
+for (const category of Object.values(D)) {
+  for (const part of category.items) {
+    if (Object.prototype.hasOwnProperty.call(PRICE_REFRESH, part.n)) part.p = PRICE_REFRESH[part.n];
+  }
+}
+
+const CAT=Object.keys(D);
+const $=s=>document.querySelector(s);
+const money=n=>"$"+n.toLocaleString("en-US", {minimumFractionDigits:Number.isInteger(n)?0:2, maximumFractionDigits:2});
+const AMAZON_EXACT_URLS = {
+  "WD Blue SN580 1 TB": "https://www.amazon.com/dp/B0C8XMH264",
+  "Crucial P3 Plus 1 TB": "https://www.amazon.com/dp/B0B25NXWC7"
+};
+const amazonUrl=p=>AMAZON_EXACT_URLS[p.n] || "https://www.amazon.com/s?k="+encodeURIComponent(p.n+" PC component");
+const est=t=>(t.cpu||t.gpu)?(t.cpu?t.cpu.tdp:0)+(t.gpu?t.gpu.w:0)+80:0;
+const dd=a=>a.filter((x,i)=>a.findIndex(y=>y.m===x.m)===i);
+const chips=m=>m.map(x=>`<div class="chip ${x.w?"w":"e"}">${x.m}</div>`).join("");
+function all(t){const r=[],a=(cats,m,w)=>r.push({cats,m,w});
+const{cpu,cooler,mobo,ram,gpu,psu}=t,c=t.case;
+if(cpu&&mobo&&cpu.sock!==mobo.sock)a(["cpu","mobo"],`Socket mismatch: the processor is ${cpu.sock} and the board is ${mobo.sock}`);
+if(mobo&&ram&&mobo.ddr!==ram.ddr)a(["mobo","ram"],`Memory mismatch: the board takes ${mobo.ddr} and the kit is ${ram.ddr}`);
+if(mobo&&c&&c.ff==="mATX"&&mobo.ff==="ATX")a(["mobo","case"],"An ATX board won’t fit a micro-ATX case");
+if(cpu&&cooler&&!cooler.socks.includes(cpu.sock))a(["cpu","cooler"],`This cooler doesn’t support ${cpu.sock}`);
+if(cooler&&c&&cooler.h>c.h)a(["cooler","case"],`Cooler is ${cooler.h} mm tall and the case allows ${c.h} mm`);
+if(cooler&&c&&cooler.rad>c.rad)a(["cooler","case"],`The case supports radiators up to ${c.rad} mm`);
+if(gpu&&c&&gpu.len>c.len)a(["gpu","case"],`Graphics card is ${gpu.len} mm and the case allows ${c.len} mm`);
+if(cpu&&gpu&&!gpu.w&&!cpu.igpu)a(["cpu","gpu"],"This processor has no built-in graphics, so it needs a graphics card");
+if(psu&&(cpu||gpu)){const n=est(t),rec=Math.ceil(n*1.3/50)*50;
+if(psu.w<n)a(["psu","cpu","gpu"],`Power supply is too small: estimated load is ${n} W`);
+else if(psu.w<n*1.3)a(["psu","cpu","gpu"],`Little headroom: estimated load is ${n} W and ${rec} W or more is recommended`,1)}
+return r}
+let S={sel:{},budget:1000},open=null;
+try{const j=JSON.parse(localStorage.getItem("bp1")||"null");if(j){S.budget=j.budget||1000;Object.entries(j.sel||{}).forEach(([c,n])=>{const it=D[c]&&D[c].items.find(x=>x.n===n);if(it)S.sel[c]=it})}}catch(e){}
+function save(){try{localStorage.setItem("bp1",JSON.stringify({budget:S.budget,sel:Object.fromEntries(Object.entries(S.sel).map(([c,p])=>[c,p.n]))}))}catch(e){}}
+
+const ACCOUNT_KEY="buildplan_local_accounts_v1", SESSION_KEY="buildplan_local_session_v1";
+let currentAccount=null;
+const getAccounts=()=>{try{return JSON.parse(localStorage.getItem(ACCOUNT_KEY)||"{}")}catch(e){return {}}};
+const putAccounts=a=>localStorage.setItem(ACCOUNT_KEY,JSON.stringify(a));
+const buildSnapshot=()=>({budget:S.budget,sel:Object.fromEntries(Object.entries(S.sel).map(([c,p])=>[c,p.n]))});
+const loadSnapshot=j=>{if(!j)return;S.budget=j.budget||1000;S.sel={};Object.entries(j.sel||{}).forEach(([c,n])=>{const it=D[c]&&D[c].items.find(x=>x.n===n);if(it)S.sel[c]=it});save()};
+async function passwordHash(password,salt){
+  if(!window.crypto||!crypto.subtle) throw new Error("Password hashing isn't available in this browser. Try opening the page in a current browser.");
+  const bytes=new TextEncoder().encode(salt+":"+password);
+  const digest=await crypto.subtle.digest("SHA-256",bytes);
+  return Array.from(new Uint8Array(digest)).map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+function setAccountMessage(s){$("#accountMessage").textContent=s}
+function refreshAccountUI(){
+  const b=$("#accountOpen");
+  if(currentAccount){b.textContent=currentAccount.email;$("#accountForm").hidden=true;$("#signedInPanel").hidden=false;$("#signedInText").textContent="Signed in locally as "+currentAccount.email;renderSavedBuilds()}
+  else{b.textContent="Sign in / Create account";$("#accountForm").hidden=false;$("#signedInPanel").hidden=true}
+}
+function openAccount(){setAccountMessage("");$("#accountOverlay").hidden=false;refreshAccountUI()}
+function closeAccount(){$("#accountOverlay").hidden=true;setAccountMessage("")}
+function renderSavedBuilds(){
+  const node=$("#savedBuilds"); if(!currentAccount){node.innerHTML="";return}
+  const accounts=getAccounts(),user=accounts[currentAccount.email],builds=(user&&user.builds)||[];
+  node.innerHTML=builds.length?'<h3 style="margin:18px 0 8px">Saved builds</h3>'+builds.map((b,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid #e5eaf2;padding:10px 0"><div><b>${escapeHtml(b.name)}</b><div style="font-size:12px;color:#657188">${money(Object.values(b.snapshot.sel||{}).reduce((sum,n)=>{for(const c of CAT){const p=D[c].items.find(x=>x.n===n);if(p)return sum+p.p}return sum},0))} · ${new Date(b.savedAt).toLocaleDateString()}</div></div><div style="display:flex;gap:5px"><button class="account-secondary" data-loadbuild="${i}">Load</button><button class="account-secondary" data-deletebuild="${i}">Delete</button></div></div>`).join(""):'<p>No saved builds yet. Save your current parts list above.</p>';
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+async function createAccount(){
+  const email=$("#accountEmail").value.trim().toLowerCase(),password=$("#accountPassword").value;
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){setAccountMessage("Enter a valid email address.");return}
+  if(password.length<8){setAccountMessage("Use a password with at least 8 characters.");return}
+  const a=getAccounts();if(a[email]){setAccountMessage("An account with that email already exists on this browser.");return}
+  try{const salt=Array.from(crypto.getRandomValues(new Uint8Array(16))).map(x=>x.toString(16).padStart(2,"0")).join("");a[email]={salt,hash:await passwordHash(password,salt),builds:[]};putAccounts(a);currentAccount={email};localStorage.setItem(SESSION_KEY,email);refreshAccountUI();setAccountMessage("Account created on this device. You can now save builds.");}
+  catch(err){setAccountMessage(err.message||"Couldn't create account in this browser.")}
+}
+async function signIn(){
+  const email=$("#accountEmail").value.trim().toLowerCase(),password=$("#accountPassword").value,a=getAccounts(),user=a[email];
+  if(!user){setAccountMessage("No local account found for that email. Create an account first on this browser.");return}
+  try{const hash=await passwordHash(password,user.salt);if(hash!==user.hash){setAccountMessage("That password doesn't match this local account.");return}
+    currentAccount={email};localStorage.setItem(SESSION_KEY,email);refreshAccountUI();setAccountMessage("Signed in.");}
+  catch(err){setAccountMessage(err.message||"Couldn't sign in.")}
+}
+function save(){
+  try{
+    const snapshot=buildSnapshot();
+    localStorage.setItem("bp1",JSON.stringify(snapshot));
+    if(currentAccount){const a=getAccounts(),u=a[currentAccount.email];if(u){u.currentBuild=snapshot;putAccounts(a)}}
+  }catch(e){}
+}
+function saveNamedBuild(){
+  if(!currentAccount){setAccountMessage("Sign in first to save builds.");return}
+  const name=$("#buildName").value.trim()||"My PC build",a=getAccounts(),u=a[currentAccount.email];
+  if(!u)return;u.builds=u.builds||[];u.builds.unshift({name,snapshot:buildSnapshot(),savedAt:new Date().toISOString()});u.builds=u.builds.slice(0,50);putAccounts(a);$("#buildName").value="";setAccountMessage("Build saved on this device.");renderSavedBuilds()
+}
+function restoreSession(){
+  try{const email=localStorage.getItem(SESSION_KEY),u=getAccounts()[email];if(email&&u){currentAccount={email};if(u.currentBuild)loadSnapshot(u.currentBuild)}}catch(e){}
+  refreshAccountUI()
+}
+
+let dc,dp;
+const fan=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}" class="s1"/><circle cx="${x}" cy="${y}" r="${r/3}" class="s3"/>`;
+function productPhoto(c,p){
+ const n=(p&&p.n||"").toLowerCase();
+ const photos=[
+  {cats:["cpu"],match:n.includes("ryzen 5 5600"),url:"https://content1.rozetka.com.ua/goods/images/big/421893667.jpg",alt:"AMD Ryzen 5 5600 retail box and processor"},
+  {cats:["mobo"],match:n.includes("msi b550m pro-vdh wifi"),url:"https://content.etilize.com/Alternate-Image1/1064270982.jpg",alt:"MSI B550M PRO-VDH WiFi motherboard"},
+  {cats:["ram"],match:n.includes("t-force vulcan z"),url:"https://u-mercari-images.mercdn.net/photos/m12740666341_1.jpg",alt:"TEAMGROUP T-Force Vulcan Z DDR4 memory modules"},
+  {cats:["storage"],match:n.includes("samsung 980 pro") && n.includes("1 tb"),url:"https://files.pccasegear.com/UserFiles/MZ-V8P1T0BW-samsung-980-pro-m2-nvme-ssd-1tb-product1.jpg",alt:"Samsung 980 PRO 1TB NVMe SSD"},
+  {cats:["case"],match:n.includes("montech x3 mesh"),url:"https://cs-d.ecimg.tw/items/DRAEC4A900BGUIK/000001_1623823251.jpg",alt:"Montech X3 Mesh PC case"},
+  {cats:["psu"],match:n.includes("corsair rm750x"),url:"https://assets.corsair.com/image/upload/c_pad%2Cq_auto%2Ch_1024%2Cw_1024%2Cf_auto/products/Certified-Refurbished/CP-9020179-EU/Gallery/RM750x_PSU_02.webp",alt:"Corsair RM750x power supply"},
+  {cats:["cooler"],match:n.includes("peerless assassin 120 se"),url:"https://down-ph.img.susercontent.com/file/ph-11134207-81zte-mjf75ahbwr28c4",alt:"Thermalright Peerless Assassin 120 SE CPU cooler"}
+ ];
+ const hit=photos.find(x=>x.cats.includes(c)&&x.match);
+ return hit?`<img class="product-photo" src="${hit.url}" alt="${hit.alt}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">`:null;
+}
+function img(c,p){const photo=productPhoto(c,p);if(photo)return photo;let b="";
+if(c==="cpu")b=`<rect x="30" y="15" width="60" height="60" rx="8" class="s2"/><rect x="37" y="22" width="46" height="46" rx="5" class="s1"/><rect x="48" y="33" width="24" height="24" rx="3" class="s4"/><path class="ln" d="M40 8v7M50 8v7M60 8v7M70 8v7M80 8v7M40 75v7M50 75v7M60 75v7M70 75v7M80 75v7M23 25h7M23 35h7M23 45h7M23 55h7M23 65h7M90 25h7M90 35h7M90 45h7M90 55h7M90 65h7"/>`;
+else if(c==="cooler")b=p.rad?`<rect x="10" y="24" width="100" height="42" rx="7" class="s2"/>`+[0,1,2].slice(0,p.rad>240?3:2).map(i=>fan(p.rad>240?32+i*28:44+i*32,45,12)).join(""):`<rect x="32" y="8" width="56" height="64" rx="6" class="s2"/><path class="ln" d="M40 8v64M48 8v64M56 8v64M64 8v64M72 8v64M80 8v64"/><circle cx="60" cy="40" r="20" class="s1"/><circle cx="60" cy="40" r="6" class="s4"/><rect x="38" y="72" width="44" height="9" rx="2" class="s4"/>`;
+else if(c==="mobo")b=`<rect x="22" y="8" width="76" height="74" rx="6" class="s1"/><rect x="32" y="18" width="28" height="28" rx="3" class="s4"/><path class="ln" d="M68 16v34M75 16v34M82 16v34M89 16v34"/><rect x="32" y="56" width="56" height="5" rx="2" class="s3"/><rect x="32" y="67" width="56" height="5" rx="2" class="s3"/>`;
+else if(c==="ram")b=[18,50].map(y=>`<rect x="14" y="${y}" width="92" height="20" rx="3" class="s2"/>`+[0,1,2,3].map(i=>`<rect x="${24+i*20}" y="${y+5}" width="14" height="10" rx="1.5" class="s4"/>`).join("")).join("");
+else if(c==="storage")b=p.s.includes("SATA SSD")?`<rect x="28" y="10" width="64" height="70" rx="6" class="s2"/><rect x="36" y="18" width="48" height="54" rx="3" class="s1"/><rect x="48" y="30" width="24" height="12" rx="2" class="s4"/>`:p.s.includes("NVMe")?`<rect x="12" y="30" width="96" height="30" rx="5" class="s2"/><rect x="12" y="30" width="10" height="30" rx="3" class="s3"/><rect x="34" y="37" width="26" height="16" rx="2" class="s4"/><rect x="68" y="37" width="26" height="16" rx="2" class="s4"/>`:`<rect x="26" y="8" width="68" height="74" rx="7" class="s2"/><circle cx="60" cy="42" r="24" class="s1"/><circle cx="60" cy="42" r="6" class="s4"/><path class="ln" d="M60 42l16-10"/>`;
+else if(c==="gpu")b=p.w?`<rect x="8" y="22" width="104" height="44" rx="7" class="s4"/>${fan(38,44,16)}${fan(82,44,16)}<rect x="20" y="66" width="44" height="5" rx="1" class="s3"/>`:`<rect x="12" y="24" width="96" height="40" rx="7" class="ln" stroke-dasharray="5 4"/>`;
+else if(c==="case"){const w=p.ff==="ATX"?56:46,x=60-w/2;b=`<rect x="${x}" y="6" width="${w}" height="76" rx="6" class="s4"/><rect x="${x+6}" y="12" width="${w-12}" height="64" rx="3" class="s1"/><circle cx="60" cy="30" r="9" class="s2"/><circle cx="60" cy="58" r="9" class="s2"/>`}
+else b=`<rect x="20" y="18" width="80" height="54" rx="6" class="s2"/><circle cx="48" cy="45" r="18" class="s1"/><circle cx="48" cy="45" r="4" class="s4"/><path class="ln" d="M76 32h16M76 40h16M76 48h16M76 56h16"/>`;
+return `<svg viewBox="0 0 120 90" aria-hidden="true">${b}</svg>`}
+function specs(c,p){const s=p.s.split(", ");
+if(c==="cpu")return[["Cores",s[0].split(" ")[0]],["Socket",p.sock],["Power (TDP)",p.tdp+" W"],["Built-in graphics",p.igpu?"Yes":"No"]];
+if(c==="cooler")return[["Type",p.rad?"Liquid":"Air"],[p.rad?"Radiator size":"Height",(p.rad||p.h)+" mm"],["Sockets",p.socks.join(", ")]];
+if(c==="mobo")return[["Socket",p.sock],["Memory",p.ddr],["Form factor",p.ff]];
+if(c==="ram")return[["Capacity",p.gb+" GB"],["Type",p.ddr]];
+if(c==="storage")return[["Type",s[0]],["Capacity",s[1]]];
+if(c==="gpu")return p.w?[["Power draw",p.w+" W"],["Length",p.len+" mm"]]:[["Graphics","Built into the CPU"]];
+if(c==="case")return[["Form factor",p.ff],["Max graphics card",p.len+" mm"],["Max cooler height",p.h+" mm"],["Max radiator",p.rad+" mm"]];
+return p.w!==undefined? [["Wattage",p.w+" W"]]:[["Details",p.s||"Optional accessory"],["Category",D[c].label]]}
+function render(){renderTop();list();pop()}
+function renderTop(){const iss=all(S.sel),ps=Object.values(S.sel),tot=ps.reduce((a,p)=>a+p.p,0),n=ps.length,w=est(S.sel),left=S.budget-tot,u=dd(iss),rec=Math.ceil(w*1.3/50)*50;
+$("#nt").textContent=money(tot);$("#nw").textContent=w+" W";
+$("#stats").innerHTML=`<div class="tile"><div class="k">Total cost</div><div class="v">${money(tot)}</div><div class="s">${n} of ${CAT.length} parts chosen</div></div>
+<div class="tile"><div class="k">Estimated power</div><div class="v">${w} W</div><div class="s">${S.sel.psu?S.sel.psu.w+" W supply chosen":w?rec+" W or more supply advised":"Add a processor or graphics card"}</div></div>
+<div class="tile"><div class="k">Budget</div><div class="v"><input id="bud" type="number" min="0" step="50" value="${S.budget}" aria-label="Budget in dollars"></div><div class="s ${left<0?"bad":""}">${left<0?money(-left)+" over budget":money(left)+" left"}</div></div>`;
+$("#chk").innerHTML=u.length?u.map(x=>`<div class="is ${x.w?"w":"e"}">${x.m}</div>`).join(""):n?`<div class="okp">No conflicts${n<CAT.length?" so far":""}</div>`:`<div class="mute">Choose parts to see compatibility checks.</div>`}
+const ART={cpu:"a processor",cooler:"a CPU cooler",mobo:"a motherboard",ram:"memory",storage:"storage",gpu:"a graphics card",case:"a case",psu:"a power supply"};
+const PRE=[
+{t:"Budget 1080p",d:"Smooth 1080p gaming without overspending.",p:["AMD Ryzen 5 5600","Thermalright Peerless Assassin 120 SE","Gigabyte B550M DS3H","Corsair Vengeance LPX 32 GB (2×16) DDR4-3200","Crucial P3 Plus 1 TB","ASUS Dual OC GeForce RTX 5060","Montech Air 903 Max","Corsair RM650e"]},
+{t:"Mainstream gaming",d:"High settings at 1440p, with room to upgrade.",p:["AMD Ryzen 5 7600","Thermalright Peerless Assassin 120 SE","MSI PRO B650M-A WiFi","Corsair Vengeance 32 GB (2×16) DDR5-6000 CL36","WD Black SN850X 1 TB","ASUS Prime GeForce RTX 5070 OC","Lian Li Lancool 216","Corsair RM750e"]},
+{t:"High-end gaming",d:"The fastest gaming chip with a 16 GB graphics card.",p:["AMD Ryzen 7 9800X3D","Arctic Liquid Freezer III 360","MSI MAG X870 Tomahawk WiFi","G.Skill Flare X5 32 GB (2×16) DDR5-6000 CL30","Samsung 990 Pro 2 TB","Sapphire Pulse Radeon RX 9070 XT","Lian Li Lancool 216","Corsair RM850e"]},
+{t:"Creator workstation",d:"Many cores, 64 GB of memory and a strong graphics card.",p:["AMD Ryzen 9 9950X","Noctua NH-D15 G2","MSI MAG X870 Tomahawk WiFi","Corsair Vengeance 64 GB (2×32) DDR5-6000 CL30","Samsung 990 Pro 2 TB","Gigabyte Windforce GeForce RTX 5070 Ti","Lian Li Lancool 216","Corsair RM1000e"]},
+{t:"Home and office",d:"Quiet, small and cheap, with built-in graphics.",p:["AMD Ryzen 5 5600G","Thermalright Assassin X 120 Refined SE","Gigabyte A520M DS3H","Corsair Vengeance LPX 16 GB (2×8) DDR4-3200","Crucial P3 Plus 1 TB","No graphics card (use CPU graphics)","Cooler Master MasterBox Q300L","Corsair CX550"]},
+{t:"AM4 + DDR4 value build",d:"A budget-friendly Ryzen 5000 build using widely available DDR4 memory.",p:["AMD Ryzen 5 5600","Thermalright Assassin X 120 Refined SE","MSI B550M PRO-VDH WiFi","TEAMGROUP T-Force Vulcan Z 32 GB (2×16) DDR4-3200","WD Blue SN580 1 TB","XFX Speedster SWFT 210 Radeon RX 6650 XT","Montech X3 Mesh","MSI MAG A650BN"]},
+{t:"Starter / light gaming",d:"A very low-cost starter PC with an older entry-level RX 550. Best for everyday use and lighter games, not demanding modern titles.",p:["AMD Ryzen 5 5500","Thermalright Assassin X 120 Refined SE","Gigabyte B550M DS3H","Corsair Vengeance LPX 16 GB (2×8) DDR4-3200","Kingston A400 480 GB SATA SSD","PowerColor Red Dragon Radeon RX 550 2 GB","Okinos Aqua 3 ARGB Micro ATX Case","MSI MAG A550BN"]}
+];
+// Refreshed Popular Picks prices (USD estimates, checked 2026-10-26).
+// Amazon prices change often; where an exact live offer could not be confirmed,
+// these are conservative planning estimates rather than guaranteed checkout prices.
+const POPULAR_PRICE_OVERRIDES = {
+  cpu: {
+    "AMD Ryzen 5 5600": 119,
+    "AMD Ryzen 5 7600": 209,
+    "AMD Ryzen 7 9800X3D": 399,
+    "AMD Ryzen 9 9950X": 538,
+    "AMD Ryzen 5 5600G": 158.88
+  },
+  cooler: {
+    "Thermalright Peerless Assassin 120 SE": 33,
+    "Thermalright Assassin X 120 Refined SE": 20,
+    "Arctic Liquid Freezer III 360": 130,
+    "Noctua NH-D15 G2": 150
+  },
+  mobo: {
+    "Gigabyte B550M DS3H": 90,
+    "MSI PRO B650M-A WiFi": 140,
+    "MSI MAG X870 Tomahawk WiFi": 300,
+    "Gigabyte A520M DS3H": 65,
+    "MSI B550M PRO-VDH WiFi": 79.99
+  },
+  ram: {
+    "Corsair Vengeance LPX 32 GB (2×16) DDR4-3200": 259.99,
+    "Corsair Vengeance 32 GB (2×16) DDR5-6000 CL36": 529.99,
+    "G.Skill Flare X5 32 GB (2×16) DDR5-6000 CL30": 630,
+    "Corsair Vengeance 64 GB (2×32) DDR5-6000 CL30": 1275,
+    "Corsair Vengeance LPX 16 GB (2×8) DDR4-3200": 139.99,
+    "TEAMGROUP T-Force Vulcan Z 32 GB (2×16) DDR4-3200": 239.90
+  },
+  storage: {
+    "Crucial P3 Plus 1 TB": 156.63,
+    "WD Black SN850X 1 TB": 247.90,
+    "Samsung 990 Pro 2 TB": 409.99,
+    "WD Blue SN580 1 TB": 130
+  },
+  gpu: {
+    "ASUS Dual OC GeForce RTX 5060": 469.99,
+    "ASUS Prime GeForce RTX 5070 OC": 700,
+    "Sapphire Pulse Radeon RX 9070 XT": 899.99,
+    "Gigabyte Windforce GeForce RTX 5070 Ti": 1200,
+    "No graphics card (use CPU graphics)": 0,
+    "XFX Speedster SWFT 210 Radeon RX 6650 XT": 240
+  },
+  case: {
+    "Montech Air 903 Max": 80,
+    "Lian Li Lancool 216": 110,
+    "Cooler Master MasterBox Q300L": 60
+  },
+  psu: {
+    "Corsair RM650e": 128.76,
+    "Corsair RM750e": 89.99,
+    "Corsair RM850e": 115.97,
+    "Corsair RM1000e": 180,
+    "Corsair CX550": 65,
+    "MSI MAG A650BN": 65
+  }
+};
+for (const [category, prices] of Object.entries(POPULAR_PRICE_OVERRIDES)) {
+  for (const [name, price] of Object.entries(prices)) {
+    const part = D[category]?.items.find(item => item.n === name);
+    if (part) part.p = price;
+  }
+}
+
+const BUILD_PHOTOS = [
+"data:image/jpeg;base64,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",
+"data:image/jpeg;base64,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",
+"data:image/jpeg;base64,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",
+"data:image/jpeg;base64,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",
+"data:image/jpeg;base64,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"
+];
+const CORE_CAT=["cpu","cooler","mobo","ram","storage","gpu","case","psu"];
+const bld=r=>Object.fromEntries(CORE_CAT.map((c,i)=>[c,D[c].items.find(x=>x.n===r.p[i])]));
+function pop(){$("#pop").innerHTML=PRE.map((r,i)=>{const b=bld(r),t=Object.values(b).reduce((a,p)=>a+p.p,0);
+const partRows=CORE_CAT.map(c=>{const p=b[c];return `<div class="popular-part"><span>${escapeHtml(p.n)}</span><b>${money(p.p)}</b><a class="buy-link" data-buy="1" href="${amazonUrl(p)}" target="_blank" rel="noopener noreferrer">Amazon</a></div>`}).join("");
+return `<div class="pb"><div class="pic build-preview"><img src="${BUILD_PHOTOS[i%BUILD_PHOTOS.length]}" alt="Illustration of the ${r.t} PC build" loading="lazy"></div><h3>${r.t}</h3><p class="d">${r.d}</p><div class="sp">${b.cpu.n}</div><div class="sp">${b.gpu.w?b.gpu.n:"Built-in graphics"}</div><details class="popular-breakdown"><summary>View item prices (estimates; verify on Amazon)</summary>${partRows}</details><div class="pr2">${money(t)}<span>total · about ${est(b)} W</span></div><button class="pill" data-pre="${i}">Use this build</button></div>`}).join("")}
+function list(){const iss=all(S.sel),tot=Object.values(S.sel).reduce((a,p)=>a+p.p,0);
+$("#list").innerHTML=`<div class="tbl">`+CAT.map(c=>{const d=D[c],p=S.sel[c];
+if(!p)return `<div class="trow"><div class="tl">${d.label}</div><div class="tm"><button class="pill" data-o="${c}">Choose ${ART[c]}</button></div><div></div><div></div></div>`;
+const m=dd(iss.filter(x=>x.cats.includes(c)));
+return `<div class="trow" data-d="${c}" tabindex="0" role="button" aria-label="${p.n}, details"><div class="tl">${d.label}</div><div class="tm"><div class="pic">${img(c,p)}</div><div><div class="nm">${p.n}</div><div class="sp">${p.s}</div>${chips(m)}</div></div><div class="pr">${money(p.p)}</div><div class="lk"><a class="buy-link" data-buy="1" href="${amazonUrl(p)}" target="_blank" rel="noopener noreferrer">Buy on Amazon</a><button class="t" data-o="${c}">Change</button><button class="t" data-r="${c}">Remove</button></div></div>`}).join("")+`<div class="ttl"><span>Total</span><b>${money(tot)}</b></div></div><div style="text-align:center;margin-top:28px"><button class="t" id="clr">Clear build</button></div>`}
+function pick(){const c=open,q=$("#q").value.toLowerCase(),hi=$("#hi").checked,so=$("#so").value;
+const L=D[c].items.map(p=>({p,m:dd(all({...S.sel,[c]:p}).filter(x=>x.cats.includes(c)))})).filter(x=>x.p.n.toLowerCase().includes(q)&&(!hi||!x.m.some(y=>!y.w)));
+if(so!=="pop")L.sort(so==="hi"?(a,b)=>b.p.p-a.p.p:so==="nm"?(a,b)=>a.p.n.localeCompare(b.p.n):(a,b)=>a.p.p-b.p.p);
+$("#pl").innerHTML=L.length?L.map(({p,m})=>{const i=D[c].items.indexOf(p);return `<div class="pi" data-pi="${i}" tabindex="0" role="button" aria-label="${p.n}, details"><div class="pic">${img(c,p)}</div><div><div class="nm">${p.n}</div><div class="sp">${p.s}</div>${chips(m)}</div><div class="pr">${money(p.p)}</div><button class="pill" data-p="${i}">${S.sel[c]===p?"Selected":"Add"}</button><a class="buy-link" data-buy="1" href="${amazonUrl(p)}" target="_blank" rel="noopener noreferrer">Amazon</a></div>`}).join(""):`<div class="mute pad">Nothing matches. Try clearing the search or turning off “Hide incompatible”.</div>`}
+function detail(c,p,own){dc=c;dp=p;
+const m=dd(all({...S.sel,[c]:p}).filter(x=>x.cats.includes(c))),has=Object.keys(S.sel).some(k=>k!==c);
+const desc=({
+cpu:`Processor for your PC. Check the socket, core count, power rating, and whether integrated graphics are included before buying.`,
+cooler:`Cooling solution to keep your processor at a suitable temperature. Check cooler height or radiator size and socket support against your case and CPU.`,
+mobo:`Mainboard that connects the components. Match the CPU socket, memory generation, and board size to the rest of your build.`,
+ram:`System memory. The motherboard must support ${p.ddr}; capacity is ${p.gb} GB. For most gaming builds, two matched sticks are a common choice.`,
+storage:`Storage drive for your operating system, apps, games, and files. Check the drive type and capacity against your needs and motherboard connections.`,
+gpu:`Graphics card for gaming, 3D work, and GPU-accelerated apps. Check its length, power needs, and the recommended power supply before purchasing.`,
+case:`PC enclosure. Check motherboard form factor, graphics-card clearance, CPU cooler height, and radiator support.`,
+psu:`Power supply for the whole system. Choose enough wattage for your CPU and graphics card, with suitable connectors and a reputable model.`
+})[c]||`PC component for your build. Review the specifications and compatibility checks before buying.`;
+const gallery=`<div class="gallery-strip" aria-label="Component illustration gallery"><div class="gallery-tile">${img(c,p)}</div><div class="gallery-tile">${img(c,p)}</div><div class="gallery-tile">${img(c,p)}</div></div>`;
+$("#dc").innerHTML=`<div class="detail-layout"><div class="detail-gallery"><div class="big" aria-label="Illustration of ${p.n}">${img(c,p)}</div><div class="detail-spec-title">Component pictures</div>${gallery}<p class="detail-desc">Where available, this uses a product photo for the exact model or product family. Other models use an illustrative component graphic.</p></div><div class="detail-copy"><div class="cat">${D[c].label}</div><h2>${p.n}</h2><div class="price">${money(p.p)}</div>${m.length?chips(m):has?`<span class="chip ok">Works with your current parts</span>`:""}<p class="detail-desc">${desc}</p><div class="detail-spec-title">Specifications</div><dl>${specs(c,p).map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl><div class="acts"><a class="buy-link" data-buy="1" href="${amazonUrl(p)}" target="_blank" rel="noopener noreferrer">Buy on Amazon</a>${own?`<button class="pill" data-o="${c}">Change</button><button class="pill g" data-r="${c}">Remove</button>`:`<button class="pill" data-add="1">${S.sel[c]===p?"Selected":"Add to build"}</button>`}</div></div></div>`;
+$("#dt").hidden=false}
+const hid=()=>{$("#dt").hidden=true};
+function shut(){hid();$("#ov").hidden=true;open=null}
+document.addEventListener("click",e=>{const t=e.target;
+if(t.closest("a[data-buy]"))return;
+if(t.id==="ov")return shut();if(t.id==="dt")return hid();
+const b=t.closest("button");
+if(b){const d=b.dataset;
+if(d.o){hid();open=d.o;$("#pt").textContent="Choose "+D[open].label.toLowerCase().replace("cpu","CPU");$("#q").value="";$("#ov").hidden=false;pick();$("#q").focus()}
+else if(d.r){hid();delete S.sel[d.r];save();render()}
+else if(d.p){S.sel[open]=D[open].items[+d.p];save();render();shut()}
+else if(d.add){S.sel[dc]=dp;save();render();shut()}
+else if(d.pre){S.sel=bld(PRE[+d.pre]);save();render();$("#parts").scrollIntoView({behavior:"smooth"})}
+else if(d.det){const[c,i]=d.det.split(":"),it=D[c].items[+i];detail(c,it,S.sel[c]===it)}
+else if(b.id==="px")shut();else if(b.id==="dx")hid();
+else if(b.id==="clr"){S.sel={};save();render()}
+return}
+const q=t.closest("[data-q]");if(q){const[c,i]=q.dataset.q.split(":"),it=D[c].items[+i];if(S.sel[c]===it)delete S.sel[c];else S.sel[c]=it;save();render();return}
+const k=t.closest("[data-d]");
+if(k)detail(k.dataset.d,S.sel[k.dataset.d],true);
+else{const r=t.closest("[data-pi]");if(r)detail(open,D[open].items[+r.dataset.pi],false)}});
+document.addEventListener("keydown",e=>{
+if(e.key==="Escape"){if(!$("#dt").hidden)hid();else if(open)shut()}
+else if(e.key==="Enter"&&e.target.matches&&e.target.matches("[data-d],[data-pi],[data-q]"))e.target.click()});
+document.addEventListener("change",e=>{if(e.target.id==="bud"){S.budget=Math.max(0,+e.target.value||0);save();renderTop()}else if(e.target.id==="so"||e.target.id==="hi")pick()});
+$("#q").addEventListener("input",pick);
+$("#accountOpen").addEventListener("click",openAccount);
+$("#accountClose").addEventListener("click",closeAccount);
+$("#accountOverlay").addEventListener("click",e=>{if(e.target.id==="accountOverlay")closeAccount()});
+$("#signUpBtn").addEventListener("click",createAccount);
+$("#signInBtn").addEventListener("click",signIn);
+$("#saveBuildBtn").addEventListener("click",saveNamedBuild);
+$("#showBuildsBtn").addEventListener("click",renderSavedBuilds);
+$("#signOutBtn").addEventListener("click",()=>{currentAccount=null;localStorage.removeItem(SESSION_KEY);refreshAccountUI();setAccountMessage("Signed out. Your saved local account remains on this browser.")});
+$("#savedBuilds").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||!currentAccount)return;const a=getAccounts(),u=a[currentAccount.email],i=Number(b.dataset.loadbuild??b.dataset.deletebuild);if(!u||!Number.isInteger(i))return;if(b.dataset.loadbuild!==undefined){loadSnapshot(u.builds[i].snapshot);render();setAccountMessage("Build loaded.");}else if(b.dataset.deletebuild!==undefined){u.builds.splice(i,1);putAccounts(a);renderSavedBuilds();setAccountMessage("Saved build deleted.");}});
+restoreSession();
+render();
+</script></body></html>
